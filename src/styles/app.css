@@ -3,20 +3,84 @@
 @tailwind utilities;
 
 @layer base {
-  html {
-    color-scheme: light dark;
-  }
+    :root {
+        /* Light Mode */
+        --background: 130 29% 83%; /* #c8e1cc */
+        --foreground: 150 32% 20%; /* #2a3e34 */
+        --card: 130 35% 93%; /* #e8f4ea */
+        --card-foreground: 150 32% 20%; /* #2a3e34 */
+        --popover: 130 35% 93%; /* #e8f4ea */
+        --popover-foreground: 150 32% 20%; /* #2a3e34 */
+        --primary: 131 35% 91%; /* #e0f0e3 */
+        --primary-foreground: 150 32% 20%; /* #2a3e34 */
+        --secondary: 131 29% 78%; /* #b8d8be */
+        --secondary-foreground: 150 32% 20%; /* #2a3e34 */
+        --muted: 131 30% 86%; /* #d2e7d6 */
+        --muted-foreground: 150 32% 20%; /* #2a3e34 */
+        --accent: 131 29% 78%; /* #b8d8be */
+        --accent-foreground: 150 32% 20%; /* #2a3e34 */
+        --destructive: 0 84.2% 60.2%; /* #f03e3e */
+        --destructive-foreground: 0 0% 98%; /* #fafafa */
+        --border: 131 30% 86%; /* #d2e7d6 */
+        --input: 131 30% 86%; /* #d2e7d6 */
+        --ring: 150 32% 20%; /* #2a3e34 */
+        --contrast-text: 0 0% 0%; /* #000000 */
 
-  * {
-    @apply border-gray-200 dark:border-gray-800;
-  }
+        /* Custom Color Palette */
+        --mint: 126 29% 84%; /* #CBE1CC */
+        --sage: 145 19% 69%; /* #A0C2B5 */
+        --teal: 173 14% 56%; /* #7DA39F */
+        --emerald: 152 32% 54%; /* #5EB488 */
+        --slate: 201 23% 36%; /* #446571 */
+        --navy: 202 29% 26%; /* #2F4858 */
+    }
 
-  html,
-  body {
-    @apply text-gray-900 bg-gray-50 dark:bg-gray-950 dark:text-gray-200;
-  }
+    .dark:root {
+        /* Dark Mode */
+        --background: 0 0% 24%; /* #3d3d3d */
+        --foreground: 0 0% 100%; /* #ffffff */
+        --card: 0 0% 10%; /* #1a1a1a */
+        --card-foreground: 0 0% 100%; /* #ffffff */
+        --popover: 0 0% 10%; /* #1a1a1a */
+        --popover-foreground: 0 0% 18%; /* #2e2e2e */
+        --primary: 131 29% 78%; /* #b8d8be */
+        --primary-foreground: 0 0% 18%; /* #2e2e2e */
+        --secondary: 0 0% 24%; /* #3d3d3d */
+        --secondary-foreground: 0 0% 18%; /* #2e2e2e */
+        --muted: 0 0% 24%; /* #3d3d3d */
+        --muted-foreground: 0 0% 67%; /* #ababab */
+        --accent: 0 0% 18%; /* #2e2e2e */
+        --accent-foreground: 0 0% 18%; /* #2e2e2e */
+        --destructive: 0 72% 51%; /* #e03131 */
+        --destructive-foreground: 0 0% 18%; /* #2e2e2e */
+        --border: 0 0% 45%; /* #737373 */
+        --input: 0 0% 24%; /* #3d3d3d */
+        --ring: 0 0% 24%; /* #3d3d3d */
+        --contrast-text: 0 0% 100%; /* #ffffff */
 
-  .using-mouse * {
-    outline: none !important;
-  }
+        /* Custom Color Palette (Dark Mode) */
+        --mint: 126 29% 84%; /* #CBE1CC */
+        --sage: 145 19% 69%; /* #A0C2B5 */
+        --teal: 173 14% 56%; /* #7DA39F */
+        --emerald: 152 32% 54%; /* #5EB488 */
+        --slate: 201 23% 36%; /* #446571 */
+        --navy: 202 29% 26%; /* #2F4858 */
+    }
+
+    html {
+        color-scheme: light dark;
+    }
+
+    * {
+        @apply border-gray-200 dark:border-gray-800;
+    }
+
+    html,
+    body {
+        @apply bg-background text-foreground;
+    }
+
+    .using-mouse * {
+        outline: none !important;
+    }
 }

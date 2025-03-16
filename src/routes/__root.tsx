@@ -1,136 +1,135 @@
 /// <reference types="vite/client" />
+import "@fontsource/comfortaa/300.css"; // Light
+import "@fontsource/comfortaa/400.css"; // Regular
+import "@fontsource/comfortaa/500.css"; // Medium
+import "@fontsource/comfortaa/600.css"; // SemiBold
+import "@fontsource/comfortaa/700.css"; // Bold
 import {
-  HeadContent,
-  Link,
-  Outlet,
-  Scripts,
-  createRootRoute,
-} from '@tanstack/react-router'
-import {
-  ClerkProvider,
-  SignInButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from '@clerk/tanstack-start'
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-import { createServerFn } from '@tanstack/react-start'
-import * as React from 'react'
-import { getAuth } from '@clerk/tanstack-start/server'
-import { getWebRequest } from '@tanstack/react-start/server'
-import { DefaultCatchBoundary } from '~/components/DefaultCatchBoundary.js'
-import { NotFound } from '~/components/NotFound.js'
-import appCss from '~/styles/app.css?url'
+    HeadContent,
+    Outlet,
+    Scripts,
+    createRootRoute,
+} from "@tanstack/react-router";
+import { ClerkProvider } from "@clerk/tanstack-start";
+import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { createServerFn } from "@tanstack/react-start";
+import * as React from "react";
+import { getAuth } from "@clerk/tanstack-start/server";
+import { getWebRequest } from "@tanstack/react-start/server";
+import { DefaultCatchBoundary } from "~/components/DefaultCatchBoundary.js";
+import { NotFound } from "~/components/NotFound.js";
+import appCss from "~/styles/app.css?url";
+import globalsCss from "~/styles/globals.css?url";
+import Navbar from "~/components/Navbar/Navbar";
+import { AppSidebar } from "~/components/AppSidebar";
+import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar";
+import { Separator } from "~/components/ui/separator";
 
-const fetchClerkAuth = createServerFn({ method: 'GET' }).handler(async () => {
-  const { userId } = await getAuth(getWebRequest()!)
-
-  return {
-    userId,
-  }
-})
-
-export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      {
-        charSet: 'utf-8',
-      },
-      {
-        name: 'viewport',
-        content: 'width=device-width, initial-scale=1',
-      },
-    ],
-    links: [
-      { rel: 'stylesheet', href: appCss },
-      {
-        rel: 'apple-touch-icon',
-        sizes: '180x180',
-        href: '/apple-touch-icon.png',
-      },
-      {
-        rel: 'icon',
-        type: 'image/png',
-        sizes: '32x32',
-        href: '/favicon-32x32.png',
-      },
-      {
-        rel: 'icon',
-        type: 'image/png',
-        sizes: '16x16',
-        href: '/favicon-16x16.png',
-      },
-      { rel: 'manifest', href: '/site.webmanifest', color: '#fffff' },
-      { rel: 'icon', href: '/favicon.ico' },
-    ],
-  }),
-  beforeLoad: async () => {
-    const { userId } = await fetchClerkAuth()
+const fetchClerkAuth = createServerFn({ method: "GET" }).handler(async () => {
+    const { userId } = await getAuth(getWebRequest()!);
 
     return {
-      userId,
-    }
-  },
-  errorComponent: (props) => {
-    return (
-      <RootDocument>
-        <DefaultCatchBoundary {...props} />
-      </RootDocument>
-    )
-  },
-  notFoundComponent: () => <NotFound />,
-  component: RootComponent,
-})
+        userId,
+    };
+});
+
+export const Route = createRootRoute({
+    head: () => ({
+        meta: [
+            {
+                charSet: "utf-8",
+            },
+            {
+                name: "viewport",
+                content: "width=device-width, initial-scale=1",
+            },
+        ],
+        links: [
+            { rel: "stylesheet", href: appCss, suppressHydrationWarning: true },
+            {
+                rel: "stylesheet",
+                href: globalsCss,
+                suppressHydrationWarning: true,
+            },
+            { rel: "preconnect", href: "https://fonts.googleapis.com" },
+            {
+                rel: "preconnect",
+                href: "https://fonts.gstatic.com",
+                crossOrigin: "anonymous",
+            },
+            {
+                rel: "stylesheet",
+                href: "https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&display=swap",
+            },
+            {
+                rel: "apple-touch-icon",
+                sizes: "180x180",
+                href: "/apple-touch-icon.png",
+            },
+            {
+                rel: "icon",
+                type: "image/png",
+                sizes: "32x32",
+                href: "/favicon-32x32.png",
+            },
+            {
+                rel: "icon",
+                type: "image/png",
+                sizes: "16x16",
+                href: "/favicon-16x16.png",
+            },
+            { rel: "manifest", href: "/site.webmanifest", color: "#fffff" },
+            { rel: "icon", href: "/favicon.ico" },
+        ],
+    }),
+    beforeLoad: async () => {
+        const { userId } = await fetchClerkAuth();
+
+        return {
+            userId,
+        };
+    },
+    errorComponent: (props) => {
+        return (
+            <RootDocument>
+                <DefaultCatchBoundary {...props} />
+            </RootDocument>
+        );
+    },
+    notFoundComponent: () => <NotFound />,
+    component: RootComponent,
+});
 
 function RootComponent() {
-  return (
-    <ClerkProvider>
-      <RootDocument>
-        <Outlet />
-      </RootDocument>
-    </ClerkProvider>
-  )
+    return (
+        <RootDocument>
+            <ClerkProvider>
+                <SidebarProvider>
+                    <AppSidebar />
+                    <SidebarInset className="flex flex-col h-screen">
+                        <Navbar />
+                        <hr />
+                        <main className="flex-1 bg-gradient-to-b from-background to-sage">
+                            <Outlet />
+                        </main>
+                        <TanStackRouterDevtools position="bottom-right" />
+                    </SidebarInset>
+                </SidebarProvider>
+            </ClerkProvider>
+        </RootDocument>
+    );
 }
 
 function RootDocument({ children }: { children: React.ReactNode }) {
-  return (
-    <html>
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <div className="p-2 flex gap-2 text-lg">
-          <Link
-            to="/"
-            activeProps={{
-              className: 'font-bold',
-            }}
-            activeOptions={{ exact: true }}
-          >
-            Home
-          </Link>{' '}
-          <Link
-            to="/posts"
-            activeProps={{
-              className: 'font-bold',
-            }}
-          >
-            Posts
-          </Link>
-          <div className="ml-auto">
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
-            <SignedOut>
-              <SignInButton mode="modal" />
-            </SignedOut>
-          </div>
-        </div>
-        <hr />
-        {children}
-        <TanStackRouterDevtools position="bottom-right" />
-        <Scripts />
-      </body>
-    </html>
-  )
+    return (
+        <html suppressHydrationWarning>
+            <head suppressHydrationWarning>
+                <HeadContent />
+            </head>
+            <body>
+                {children}
+                <Scripts />
+            </body>
+        </html>
+    );
 }
