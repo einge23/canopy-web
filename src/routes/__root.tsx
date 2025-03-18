@@ -24,6 +24,7 @@ import Navbar from "~/components/Navbar/Navbar";
 import { AppSidebar } from "~/components/AppSidebar";
 import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar";
 import { Separator } from "~/components/ui/separator";
+import { CalendarProvider } from "~/contexts/CalendarContext";
 
 const fetchClerkAuth = createServerFn({ method: "GET" }).handler(async () => {
     const { userId } = await getAuth(getWebRequest()!);
@@ -104,17 +105,19 @@ function RootComponent() {
     return (
         <RootDocument>
             <ClerkProvider>
-                <SidebarProvider>
-                    <AppSidebar />
-                    <SidebarInset className="flex flex-col h-screen">
-                        <Navbar />
-                        <hr />
-                        <main className="flex-1 bg-gradient-to-b from-background to-sage">
-                            <Outlet />
-                        </main>
-                        <TanStackRouterDevtools position="bottom-right" />
-                    </SidebarInset>
-                </SidebarProvider>
+                <CalendarProvider>
+                    <SidebarProvider>
+                        <AppSidebar />
+                        <SidebarInset className="flex flex-col">
+                            <Navbar />
+                            <hr />
+                            <main className="flex-1 bg-gradient-to-b from-background to-teal/80">
+                                <Outlet />
+                            </main>
+                            <TanStackRouterDevtools position="bottom-right" />
+                        </SidebarInset>
+                    </SidebarProvider>
+                </CalendarProvider>
             </ClerkProvider>
         </RootDocument>
     );
@@ -126,7 +129,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             <head suppressHydrationWarning>
                 <HeadContent />
             </head>
-            <body>
+            <body className="bg-gradient-to-b from-background to-teal/80">
                 {children}
                 <Scripts />
             </body>

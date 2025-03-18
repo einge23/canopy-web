@@ -43,7 +43,7 @@ import {
 
 export function AppSidebar() {
     return (
-        <Sidebar className="bg-gradient-to-b from-background to-sage">
+        <Sidebar>
             <SidebarContent>
                 <SidebarGroup>
                     <SidebarGroupLabel className="font-bold text-xl flex justify-center items-center gap-3 h-[52px]">
