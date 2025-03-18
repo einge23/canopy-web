@@ -1,3 +1,6 @@
+import { createServerFn } from "@tanstack/react-start";
+import axios from "redaxios";
+
 export const isLeapYear = (year: number): boolean => {
     return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
 };
@@ -134,13 +137,3 @@ export const getCurrentTimeIndicatorStyles = (date: Date) => {
 
 //     return post
 //   })
-
-// export const fetchPosts = createServerFn({ method: 'GET' }).handler(
-//   async () => {
-//     console.info('Fetching posts...')
-//     await new Promise((r) => setTimeout(r, 1000))
-//     return axios
-//       .get<Array<PostType>>('https://jsonplaceholder.typicode.com/posts')
-//       .then((r) => r.data.slice(0, 10))
-//   },
-// )

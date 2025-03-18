@@ -23,8 +23,8 @@ import globalsCss from "~/styles/globals.css?url";
 import Navbar from "~/components/Navbar/Navbar";
 import { AppSidebar } from "~/components/AppSidebar";
 import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar";
-import { Separator } from "~/components/ui/separator";
 import { CalendarProvider } from "~/contexts/CalendarContext";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const fetchClerkAuth = createServerFn({ method: "GET" }).handler(async () => {
     const { userId } = await getAuth(getWebRequest()!);
@@ -32,6 +32,14 @@ const fetchClerkAuth = createServerFn({ method: "GET" }).handler(async () => {
     return {
         userId,
     };
+});
+
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            staleTime: 60 * 1000,
+        },
+    },
 });
 
 export const Route = createRootRoute({
@@ -103,23 +111,25 @@ export const Route = createRootRoute({
 
 function RootComponent() {
     return (
-        <RootDocument>
-            <ClerkProvider>
-                <CalendarProvider>
-                    <SidebarProvider>
-                        <AppSidebar />
-                        <SidebarInset className="flex flex-col">
-                            <Navbar />
-                            <hr />
-                            <main className="flex-1 bg-gradient-to-b from-background to-teal/80">
-                                <Outlet />
-                            </main>
-                            <TanStackRouterDevtools position="bottom-right" />
-                        </SidebarInset>
-                    </SidebarProvider>
-                </CalendarProvider>
-            </ClerkProvider>
-        </RootDocument>
+        <QueryClientProvider client={queryClient}>
+            <RootDocument>
+                <ClerkProvider>
+                    <CalendarProvider>
+                        <SidebarProvider>
+                            <AppSidebar />
+                            <SidebarInset className="flex flex-col">
+                                <Navbar />
+                                <hr />
+                                <main className="flex-1 bg-gradient-to-b from-background to-teal/80">
+                                    <Outlet />
+                                </main>
+                                <TanStackRouterDevtools position="bottom-right" />
+                            </SidebarInset>
+                        </SidebarProvider>
+                    </CalendarProvider>
+                </ClerkProvider>
+            </RootDocument>
+        </QueryClientProvider>
     );
 }
 
