@@ -1,4 +1,5 @@
 import { useCalendar } from "~/contexts/CalendarContext";
+import { CalendarEvent } from "~/models/events";
 import { DayInfo } from "~/routes/_authed/calendar";
 
 interface CalendarBoxProps {
@@ -7,6 +8,7 @@ interface CalendarBoxProps {
     onDateClick: (date: Date) => void;
     isToday: (date: Date) => boolean;
     isSelected: (date: Date, selectedDate: Date) => boolean;
+    events: CalendarEvent[];
 }
 
 export default function CalendarBox({
@@ -15,8 +17,12 @@ export default function CalendarBox({
     onDateClick,
     isToday,
     isSelected,
+    events,
 }: CalendarBoxProps) {
     const { selectedDate } = useCalendar();
+
+    const visibleEvents = events.slice(0, 2);
+    const remainingCount = Math.max(0, events.length - 2);
 
     return (
         <div
@@ -31,7 +37,21 @@ export default function CalendarBox({
             }`}
         >
             <div className="text-right">{dayInfo.date.getDate()}</div>
-            {/* You might want to replace this with your CalendarBox component */}
+            {visibleEvents.map((event) => (
+                <div
+                    key={event.id}
+                    className="w-full h-5 hover:brightness-90 rounded-md text-xs mb-1 px-1 overflow-hidden text-ellipsis whitespace-nowrap flex items-center"
+                    style={{ backgroundColor: event.color }}
+                >
+                    {event.name}
+                </div>
+            ))}
+
+            {remainingCount > 0 && (
+                <div className="w-full h-5 hover:brightness-90 rounded-md text-xs mb-1 px-1 bg-background text-gray-700 flex items-center justify-center font-medium">
+                    + {remainingCount} more
+                </div>
+            )}
         </div>
     );
 }

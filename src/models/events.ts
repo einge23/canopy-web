@@ -1,4 +1,4 @@
-export interface Event {
+export interface CalendarEvent {
     id: number;
     name: string;
     start: string; // ISO date string

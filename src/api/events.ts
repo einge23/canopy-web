@@ -1,3 +1,4 @@
+import { CalendarEvent } from "~/models/events";
 import { api, getAuthenticatedApi } from "./api-base";
 
 export interface CreateEventRequest {
@@ -18,7 +19,10 @@ export interface getUserEventsByDateRequest {
 
 export async function createEvent(request: CreateEventRequest, token: string) {
     const authApi = getAuthenticatedApi(token);
-    const response = await authApi.post<Event>("/events/create", request);
+    const response = await authApi.post<CalendarEvent>(
+        "/events/create",
+        request
+    );
     return response.data;
 }
 
@@ -28,7 +32,7 @@ export async function getUserEventsByDate(
 ) {
     const authApi = getAuthenticatedApi(token);
 
-    const response = await authApi.get<Event[]>(
+    const response = await authApi.get<CalendarEvent[]>(
         `/events/daily/${request.user_id}/${request.date.toISOString()}`
     );
     console.log(response);
@@ -38,20 +42,22 @@ export async function getUserEventsByDate(
 // Add function for getting all user events
 export async function getUserEvents(userId: string, token: string) {
     const authApi = getAuthenticatedApi(token);
-    const response = await authApi.get<Event[]>(`/events/user/${userId}`);
+    const response = await authApi.get<CalendarEvent[]>(
+        `/events/user/${userId}`
+    );
     return response.data;
 }
 
 // Add function for editing events
-export async function editEvent(event: Event, token: string) {
+export async function editEvent(event: CalendarEvent, token: string) {
     const authApi = getAuthenticatedApi(token);
-    const response = await authApi.put<Event>("/events/edit", event);
+    const response = await authApi.put<CalendarEvent>("/events/edit", event);
     return response.data;
 }
 
 export async function deleteEvent(eventId: number, token: string) {
     const authApi = getAuthenticatedApi(token);
-    const response = await authApi.delete<Event>(`/events/${eventId}`);
+    const response = await authApi.delete<CalendarEvent>(`/events/${eventId}`);
     return response.data;
 }
 
@@ -62,7 +68,7 @@ export async function getEventsByMonth(
     token: string
 ) {
     const authApi = getAuthenticatedApi(token);
-    const response = await authApi.get<Event[]>(
+    const response = await authApi.get<CalendarEvent[]>(
         `/events/monthly/${userId}/${year}/${month + 1}`
     );
     console.log(response.data);

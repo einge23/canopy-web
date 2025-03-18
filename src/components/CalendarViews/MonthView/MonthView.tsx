@@ -1,7 +1,17 @@
 import { useCalendar } from "~/contexts/CalendarContext";
-import CalendarBox from "../CalendarBox";
-import { isSelected, isToday } from "~/utils/calendar";
-export default function MonthView() {
+import {
+    filterEventsForDate,
+    filterEventsForMonth,
+    isSelected,
+    isToday,
+} from "~/utils/calendar";
+import { CalendarEvent } from "~/models/events";
+import CalendarBox from "./CalendarBox";
+
+type MonthViewProps = {
+    events: CalendarEvent[];
+};
+export default function MonthView({ events }: MonthViewProps) {
     const { viewDate, selectedDate, setSelectedDate } = useCalendar();
 
     const month = viewDate.getMonth();
@@ -58,6 +68,7 @@ export default function MonthView() {
                             onDateClick={handleDateClick}
                             isToday={isToday}
                             isSelected={isSelected}
+                            events={filterEventsForDate(dayInfo.date, events)}
                         />
                     ))}
                 </div>

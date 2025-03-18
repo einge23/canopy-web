@@ -57,12 +57,14 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
         const newDate = new Date(viewDate);
         newDate.setDate(newDate.getDate() - 1);
         setViewDate(newDate);
+        setSelectedDate(new Date(newDate));
     };
 
     const nextDay = () => {
         const newDate = new Date(viewDate);
         newDate.setDate(newDate.getDate() + 1);
         setViewDate(newDate);
+        setSelectedDate(new Date(newDate));
     };
 
     const formatViewDate = () => {
