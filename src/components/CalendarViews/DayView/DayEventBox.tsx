@@ -6,12 +6,14 @@ type DayEventBoxProps = {
     events: CalendarEvent[];
     hourHeight: number;
     viewDate: Date;
+    className?: string;
 };
 
 export default function DayEventBox({
     events,
     hourHeight,
     viewDate,
+    className = "",
 }: DayEventBoxProps) {
     // Calculate event positions for the day
     const eventsWithPositions = useMemo(() => {
@@ -78,7 +80,7 @@ export default function DayEventBox({
     };
 
     return (
-        <div>
+        <div className={className}>
             {eventsWithPositions.map(
                 ({ event, topPixels, heightPixels, startTime, endTime }) => (
                     <div

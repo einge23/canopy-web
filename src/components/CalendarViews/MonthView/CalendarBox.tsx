@@ -1,4 +1,5 @@
 import { useCalendar } from "~/contexts/CalendarContext";
+import { adjustColor } from "~/lib/random-helpers";
 import { CalendarEvent } from "~/models/events";
 import { DayInfo } from "~/routes/_authed/calendar";
 
@@ -31,7 +32,7 @@ export default function CalendarBox({
             className={`p-2 border rounded min-h-24 cursor-pointer  ${
                 !dayInfo.isCurrentMonth ? "bg-teal text-gray-100"
                 : isSelected(dayInfo.date, selectedDate) ?
-                    "bg-green-100 border-sage"
+                    " bg-sage  border-2 border-teal"
                 : isToday(dayInfo.date) ? "bg-teal/50 border-gray-100"
                 : ""
             }`}
@@ -41,7 +42,9 @@ export default function CalendarBox({
                 <div
                     key={event.id}
                     className="w-full h-5 hover:brightness-90 rounded-md text-xs mb-1 px-1 overflow-hidden text-ellipsis whitespace-nowrap flex items-center"
-                    style={{ backgroundColor: event.color }}
+                    style={{
+                        background: `linear-gradient(to bottom, ${event.color}, ${adjustColor(event.color, -20)})`,
+                    }}
                 >
                     {event.name}
                 </div>
