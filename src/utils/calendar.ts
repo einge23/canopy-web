@@ -200,7 +200,7 @@ export const getMonthlyEvents = createServerFn({ method: "GET" })
     });
 
 // Pre-defined constant array of all time options (96 values - 24 hours × 4 quarters)
-const ALL_TIME_OPTIONS = [
+export const ALL_TIME_OPTIONS = [
     { value: "00:00", label: "12:00 AM" },
     { value: "00:15", label: "12:15 AM" },
     { value: "00:30", label: "12:30 AM" },

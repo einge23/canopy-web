@@ -4,7 +4,6 @@ import DayEventBox from "./DayEventBox";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { filterEventsForDate } from "~/utils/calendar";
 import { AnimatedLoader } from "~/components/AnimatedLoader";
-import { AnimatePresence } from "framer-motion";
 import AddEventDialog from "../AddEventDialog";
 
 type DayViewProps = {
@@ -206,16 +205,17 @@ export default function DayView({ events, isLoading = false }: DayViewProps) {
                     }
                 </div>
 
-                <AnimatePresence>
-                    {showEventForm && (
-                        <AddEventDialog
-                            isOpen={showEventForm}
-                            onClose={() => setShowEventForm(false)}
-                            position={dialogPosition}
-                            time={popoverTime}
-                        />
-                    )}
-                </AnimatePresence>
+                {showEventForm && (
+                    <AddEventDialog
+                        isOpen={showEventForm}
+                        onClose={() => setShowEventForm(false)}
+                        position={{
+                            x: dialogPosition.left,
+                            y: dialogPosition.top,
+                        }}
+                        initialStart={popoverTime || viewDate}
+                    />
+                )}
             </div>
         </div>
     );
