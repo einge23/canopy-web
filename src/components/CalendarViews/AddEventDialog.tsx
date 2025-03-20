@@ -130,8 +130,8 @@ export default function AddEventDialog({
                                             <SelectTrigger>
                                                 <p className="hover:underline">
                                                     {formatTime(
-                                                        initialStart.getHours(),
-                                                        initialStart.getMinutes()
+                                                        field.state.value.getHours(),
+                                                        field.state.value.getMinutes()
                                                     )}
                                                 </p>
                                             </SelectTrigger>
