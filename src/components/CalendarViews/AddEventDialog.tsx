@@ -17,7 +17,7 @@ import {
     SelectValue,
 } from "../ui/select";
 import { ALL_TIME_OPTIONS, getTimeOptionsStartingFrom } from "~/utils/calendar";
-import { useMemo } from "react";
+import * as React from "react";
 
 interface AddEventDialogProps {
     isOpen: boolean;
@@ -48,10 +48,6 @@ export default function AddEventDialog({
             user_id: userId,
         } as CreateEventRequest,
     });
-
-    const startTimeOptions = useMemo(() => {
-        return getTimeOptionsStartingFrom(initialStart);
-    }, [initialStart]);
 
     const convertTimeToDate = (time: string) => {
         const [hours, minutes] = time.split(":");
@@ -100,65 +96,141 @@ export default function AddEventDialog({
                                                 )
                                             }
                                         />
-                                        <p className="break-words whitespace-normal">
-                                            {field.state.value}
-                                        </p>
                                     </>
                                 );
                             }}
                         />
-                        <addEventForm.Field
-                            name="start"
-                            children={(field) => {
-                                const timeString =
-                                    field.state.value.toLocaleTimeString([], {
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                        hour12: true,
-                                    });
-
-                                return (
-                                    <>
-                                        <Select
-                                            value={timeString}
-                                            onValueChange={(value) =>
-                                                field.handleChange(
-                                                    convertTimeToDate(value)
-                                                )
+                        <div className="flex items-center justify-start space-x-2 text-sm">
+                            <addEventForm.Field
+                                name="start"
+                                children={(field) => {
+                                    const timeString =
+                                        field.state.value.toLocaleTimeString(
+                                            [],
+                                            {
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                                hour12: true,
                                             }
-                                        >
-                                            <SelectTrigger>
-                                                <p className="hover:underline">
-                                                    {formatTime(
-                                                        field.state.value.getHours(),
-                                                        field.state.value.getMinutes()
-                                                    )}
-                                                </p>
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectGroup>
-                                                    {startTimeOptions.map(
-                                                        (time) => (
-                                                            <SelectItem
-                                                                key={time.value}
-                                                                value={
-                                                                    time.value
-                                                                }
-                                                            >
-                                                                {time.label}
-                                                            </SelectItem>
-                                                        )
-                                                    )}
-                                                </SelectGroup>
-                                            </SelectContent>
-                                        </Select>
-                                        <p>
-                                            {field.state.value.toTimeString()}
-                                        </p>
-                                    </>
-                                );
-                            }}
-                        />
+                                        );
+
+                                    const startTimeOptions =
+                                        getTimeOptionsStartingFrom(
+                                            field.state.value
+                                        );
+
+                                    return (
+                                        <>
+                                            <Select
+                                                value={timeString}
+                                                onValueChange={(value) => {
+                                                    field.handleChange(
+                                                        convertTimeToDate(value)
+                                                    );
+                                                }}
+                                            >
+                                                <SelectTrigger>
+                                                    <p className="hover:underline">
+                                                        {formatTime(
+                                                            field.state.value.getHours(),
+                                                            field.state.value.getMinutes()
+                                                        )}
+                                                    </p>
+                                                </SelectTrigger>
+                                                <SelectContent
+                                                    position="popper"
+                                                    className="max-h-[200px] overflow-y-auto"
+                                                >
+                                                    <SelectGroup>
+                                                        {startTimeOptions.map(
+                                                            (time) => (
+                                                                <SelectItem
+                                                                    key={
+                                                                        time.value
+                                                                    }
+                                                                    value={
+                                                                        time.value
+                                                                    }
+                                                                >
+                                                                    {time.label}
+                                                                </SelectItem>
+                                                            )
+                                                        )}
+                                                    </SelectGroup>
+                                                </SelectContent>
+                                            </Select>
+                                        </>
+                                    );
+                                }}
+                            />
+                            <span>-</span>
+
+                            <addEventForm.Field
+                                name="end"
+                                children={(field) => {
+                                    const timeString =
+                                        field.state.value.toLocaleTimeString(
+                                            [],
+                                            {
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                                hour12: true,
+                                            }
+                                        );
+
+                                    // Get the start time from the form state
+                                    const endTime =
+                                        addEventForm.getFieldValue("end");
+
+                                    // Generate time options starting from start time
+                                    const endTimeOptions =
+                                        getTimeOptionsStartingFrom(endTime);
+
+                                    return (
+                                        <>
+                                            <Select
+                                                value={timeString}
+                                                onValueChange={(value) => {
+                                                    field.handleChange(
+                                                        convertTimeToDate(value)
+                                                    );
+                                                }}
+                                            >
+                                                <SelectTrigger>
+                                                    <p className="hover:underline">
+                                                        {formatTime(
+                                                            field.state.value.getHours(),
+                                                            field.state.value.getMinutes()
+                                                        )}
+                                                    </p>
+                                                </SelectTrigger>
+                                                <SelectContent
+                                                    position="popper"
+                                                    className="max-h-[200px] overflow-y-auto"
+                                                >
+                                                    <SelectGroup>
+                                                        {endTimeOptions.map(
+                                                            (time) => (
+                                                                <SelectItem
+                                                                    key={
+                                                                        time.value
+                                                                    }
+                                                                    value={
+                                                                        time.value
+                                                                    }
+                                                                >
+                                                                    {time.label}
+                                                                </SelectItem>
+                                                            )
+                                                        )}
+                                                    </SelectGroup>
+                                                </SelectContent>
+                                            </Select>
+                                        </>
+                                    );
+                                }}
+                            />
+                        </div>
                     </div>
                 </div>
             </CustomDialogContent>
