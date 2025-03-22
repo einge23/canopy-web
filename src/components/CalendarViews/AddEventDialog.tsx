@@ -20,7 +20,19 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Calendar } from "../ui/calendar";
 import { format } from "date-fns";
 import { useState } from "react";
-import { MapPin } from "lucide-react";
+import {
+    Blend,
+    Calendar1,
+    CalendarIcon,
+    CalendarPlus,
+    MapPin,
+    Pencil,
+    Redo,
+    Rewind,
+    RotateCw,
+} from "lucide-react";
+import { Textarea } from "../ui/textarea";
+import { Button } from "../ui/button";
 
 interface AddEventDialogProps {
     isOpen: boolean;
@@ -103,29 +115,33 @@ export default function AddEventDialog({
             >
                 <div className="whitespace-normal break-words">
                     <div className="flex flex-col space-y-4">
-                        <addEventForm.Field
-                            name="name"
-                            children={(field) => {
-                                return (
-                                    <>
-                                        <Input
-                                            placeholder="New event"
-                                            className="placeholder:text-gray-500 placeholder:text-lg  max-w-[600px] text-ellipsis text-lg"
-                                            id={field.name}
-                                            name={field.name}
-                                            value={field.state.value}
-                                            onChange={(e) =>
-                                                field.handleChange(
-                                                    e.target.value
-                                                )
-                                            }
-                                            autoFocus
-                                        />
-                                    </>
-                                );
-                            }}
-                        />
                         <div className="flex items-center justify-start space-x-2 text-sm">
+                            <CalendarPlus />
+                            <addEventForm.Field
+                                name="name"
+                                children={(field) => {
+                                    return (
+                                        <>
+                                            <Input
+                                                placeholder="New event"
+                                                className="placeholder:text-gray-500 placeholder:text-lg  max-w-[400px] text-ellipsis text-lg"
+                                                id={field.name}
+                                                name={field.name}
+                                                value={field.state.value}
+                                                onChange={(e) =>
+                                                    field.handleChange(
+                                                        e.target.value
+                                                    )
+                                                }
+                                                autoFocus
+                                            />
+                                        </>
+                                    );
+                                }}
+                            />
+                        </div>
+                        <div className="flex items-center justify-start space-x-2 text-sm">
+                            <CalendarIcon />
                             <addEventForm.Field
                                 name="start"
                                 children={(field) => {
@@ -256,7 +272,6 @@ export default function AddEventDialog({
                                 }}
                             />
                             <span>-</span>
-
                             <addEventForm.Field
                                 name="end"
                                 children={(field) => {
@@ -327,11 +342,11 @@ export default function AddEventDialog({
                             name="location"
                             children={(field) => {
                                 return (
-                                    <>
+                                    <div className="flex items-center space-x-2">
                                         <MapPin />
                                         <Input
                                             placeholder="Location"
-                                            className="placeholder:text-gray-500 placeholder:text-lg max-w-[600px] text-ellipsis text-lg"
+                                            className="placeholder:text-gray-500 placeholder:text-lg max-w-[400px] text-ellipsis text-s"
                                             id={field.name}
                                             name={field.name}
                                             value={field.state.value}
@@ -341,12 +356,129 @@ export default function AddEventDialog({
                                                 )
                                             }
                                         />
-                                    </>
+                                    </div>
                                 );
                             }}
-                        ></addEventForm.Field>
+                        />
+                        <addEventForm.Field
+                            name="color"
+                            children={(field) => {
+                                const colorOptions = [
+                                    "#55CBCD",
+                                    "#97C2A9",
+                                    "#FF968A",
+                                    "#FFCBA2",
+                                    "#CBAACB",
+                                    "#FEE1E8",
+                                ];
+
+                                return (
+                                    <div className="flex items-center space-x-2">
+                                        <Blend />
+                                        <div className="flex flex-wrap gap-2 mt-1">
+                                            {colorOptions.map((color) => (
+                                                <button
+                                                    key={color}
+                                                    type="button"
+                                                    onClick={() =>
+                                                        field.handleChange(
+                                                            color
+                                                        )
+                                                    }
+                                                    className={`w-8 h-8 rounded-md transition-all ${
+                                                        (
+                                                            field.state
+                                                                .value === color
+                                                        ) ?
+                                                            "ring-2 ring-offset-2 ring-gray-400"
+                                                        :   "hover:scale-110"
+                                                    }`}
+                                                    style={{
+                                                        backgroundColor: color,
+                                                    }}
+                                                    aria-label={`Select color ${color}`}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                );
+                            }}
+                        />
+                        <div className="flex items-center justify-start space-x-2  mt-4 text-sm">
+                            <Pencil />
+                            <addEventForm.Field
+                                name="description"
+                                children={(field) => {
+                                    return (
+                                        <>
+                                            <Textarea
+                                                placeholder="Description"
+                                                className="placeholder:text-gray-500 placeholder:text-lg  max-w-[400px] text-ellipsis text-s"
+                                                id={field.name}
+                                                name={field.name}
+                                                value={field.state.value}
+                                                onChange={(e) =>
+                                                    field.handleChange(
+                                                        e.target.value
+                                                    )
+                                                }
+                                                autoFocus
+                                            />
+                                        </>
+                                    );
+                                }}
+                            />
+                        </div>
                     </div>
+                    <addEventForm.Field
+                        name="recurrence_rule"
+                        children={(field) => {
+                            const recurrenceOptions = [
+                                "Never",
+                                "Daily",
+                                "Weekly",
+                                "Monthly",
+                                "Yearly",
+                            ];
+
+                            return (
+                                <div className="flex mt-2 items-center space-x-2">
+                                    <RotateCw />
+                                    <div className="flex flex-wrap gap-2 mt-1">
+                                        {recurrenceOptions.map((option) => (
+                                            <Button
+                                                key={option}
+                                                type="button"
+                                                variant={
+                                                    (
+                                                        field.state.value ===
+                                                        option
+                                                    ) ?
+                                                        "default"
+                                                    :   "outline"
+                                                }
+                                                className={`px-3 py-1 text-sm ${
+                                                    (
+                                                        field.state.value ===
+                                                        option
+                                                    ) ?
+                                                        "bg-primary text-primary-foreground"
+                                                    :   "hover:bg-primary/10"
+                                                }`}
+                                                onClick={() =>
+                                                    field.handleChange(option)
+                                                }
+                                            >
+                                                {option}
+                                            </Button>
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        }}
+                    />
                 </div>
+
                 <DialogFooter>
                     <button
                         onClick={addEventForm.handleSubmit}
