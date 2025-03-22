@@ -14,10 +14,13 @@ import {
     SelectGroup,
     SelectItem,
     SelectTrigger,
-    SelectValue,
 } from "../ui/select";
-import { ALL_TIME_OPTIONS, getTimeOptionsStartingFrom } from "~/utils/calendar";
-import * as React from "react";
+import { getTimeOptionsStartingFrom } from "~/utils/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Calendar } from "../ui/calendar";
+import { format } from "date-fns";
+import { useState } from "react";
+import { MapPin } from "lucide-react";
 
 interface AddEventDialogProps {
     isOpen: boolean;
@@ -35,6 +38,8 @@ export default function AddEventDialog({
     const initialEnd = new Date(initialStart);
     initialEnd.setHours(initialStart.getHours() + 1);
 
+    const [calendarOpen, setCalendarOpen] = useState(false);
+
     const { userId } = useAuth();
     const addEventForm = useForm({
         defaultValues: {
@@ -47,6 +52,9 @@ export default function AddEventDialog({
             end: initialEnd,
             user_id: userId,
         } as CreateEventRequest,
+        onSubmit: async (values) => {
+            console.log(values);
+        },
     });
 
     const convertTimeToDate = (time: string) => {
@@ -68,16 +76,32 @@ export default function AddEventDialog({
         });
     };
 
+    const formatDate = (date: Date) => {
+        return format(date, "EEEE, MMMM do");
+    };
+
+    const updateDatePart = (currentDate: Date, newDate: Date) => {
+        const result = new Date(currentDate);
+        result.setFullYear(newDate.getFullYear());
+        result.setMonth(newDate.getMonth());
+        result.setDate(newDate.getDate());
+        return result;
+    };
+
     return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
+        <Dialog
+            open={isOpen}
+            onOpenChange={(open) => {
+                // Only close the dialog when specifically requested
+                if (!open) onClose();
+            }}
+        >
             <CustomDialogContent
                 x={position.x}
                 y={position.y}
                 className="overflow-y-auto max-w-[400px] overflow-x-hidden"
             >
                 <div className="whitespace-normal break-words">
-                    {initialStart.toLocaleTimeString()} -{" "}
-                    {initialEnd.toLocaleTimeString()}
                     <div className="flex flex-col space-y-4">
                         <addEventForm.Field
                             name="name"
@@ -95,12 +119,80 @@ export default function AddEventDialog({
                                                     e.target.value
                                                 )
                                             }
+                                            autoFocus
                                         />
                                     </>
                                 );
                             }}
                         />
                         <div className="flex items-center justify-start space-x-2 text-sm">
+                            <addEventForm.Field
+                                name="start"
+                                children={(field) => {
+                                    return (
+                                        <Popover
+                                            open={calendarOpen}
+                                            onOpenChange={setCalendarOpen}
+                                        >
+                                            <PopoverTrigger className="flex items-center">
+                                                <p className="mr-2 hover:underline cursor-pointer">
+                                                    {formatDate(
+                                                        field.state.value
+                                                    )}
+                                                </p>
+                                            </PopoverTrigger>
+                                            <PopoverContent
+                                                className="w-auto p-0"
+                                                side="bottom"
+                                                align="start"
+                                                sideOffset={5}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                }}
+                                            >
+                                                <Calendar
+                                                    mode="single"
+                                                    selected={field.state.value}
+                                                    onSelect={(date) => {
+                                                        if (date) {
+                                                            // Update start date while keeping time
+                                                            const newStart =
+                                                                updateDatePart(
+                                                                    field.state
+                                                                        .value,
+                                                                    date
+                                                                );
+                                                            field.handleChange(
+                                                                newStart
+                                                            );
+
+                                                            // Also update end date to same day
+                                                            const endValue =
+                                                                addEventForm.getFieldValue(
+                                                                    "end"
+                                                                );
+                                                            const newEnd =
+                                                                updateDatePart(
+                                                                    endValue,
+                                                                    date
+                                                                );
+                                                            addEventForm.setFieldValue(
+                                                                "end",
+                                                                newEnd
+                                                            );
+                                                            setCalendarOpen(
+                                                                false
+                                                            );
+                                                        }
+                                                    }}
+                                                    initialFocus
+                                                />
+                                            </PopoverContent>
+                                        </Popover>
+                                    );
+                                }}
+                            />
+
                             <addEventForm.Field
                                 name="start"
                                 children={(field) => {
@@ -231,10 +323,39 @@ export default function AddEventDialog({
                                 }}
                             />
                         </div>
+                        <addEventForm.Field
+                            name="location"
+                            children={(field) => {
+                                return (
+                                    <>
+                                        <MapPin />
+                                        <Input
+                                            placeholder="Location"
+                                            className="placeholder:text-gray-500 placeholder:text-lg max-w-[600px] text-ellipsis text-lg"
+                                            id={field.name}
+                                            name={field.name}
+                                            value={field.state.value}
+                                            onChange={(e) =>
+                                                field.handleChange(
+                                                    e.target.value
+                                                )
+                                            }
+                                        />
+                                    </>
+                                );
+                            }}
+                        ></addEventForm.Field>
                     </div>
                 </div>
+                <DialogFooter>
+                    <button
+                        onClick={addEventForm.handleSubmit}
+                        className="btn-primary"
+                    >
+                        Add Event
+                    </button>
+                </DialogFooter>
             </CustomDialogContent>
-            <DialogFooter></DialogFooter>
         </Dialog>
     );
 }
