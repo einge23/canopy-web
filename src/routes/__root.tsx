@@ -25,6 +25,7 @@ import { AppSidebar } from "~/components/AppSidebar";
 import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar";
 import { CalendarProvider } from "~/contexts/CalendarContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "sonner";
 
 const fetchClerkAuth = createServerFn({ method: "GET" }).handler(async () => {
     const { userId } = await getAuth(getWebRequest()!);
@@ -115,6 +116,7 @@ function RootComponent() {
             <RootDocument>
                 <ClerkProvider>
                     <CalendarProvider>
+                        <Toaster />
                         <SidebarProvider>
                             <AppSidebar />
                             <SidebarInset className="flex flex-col">

@@ -3,8 +3,8 @@ export interface CalendarEvent {
     name: string;
     start: string; // ISO date string
     end: string; // ISO date string
-    location: string;
-    description: string;
+    location?: string;
+    description?: string;
     user_id: number;
     color: string;
     recurrence_rule?: string;

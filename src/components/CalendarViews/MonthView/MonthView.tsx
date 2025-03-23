@@ -7,13 +7,16 @@ import {
 } from "~/utils/calendar";
 import { CalendarEvent } from "~/models/events";
 import CalendarBox from "./CalendarBox";
+import { useState } from "react";
+import AddEventDialog from "../AddEventDialog";
 
 type MonthViewProps = {
     events: CalendarEvent[];
 };
 export default function MonthView({ events }: MonthViewProps) {
     const { viewDate, selectedDate, setSelectedDate } = useCalendar();
-
+    const [showCreateEventDialog, setShowCreateEventDialog] = useState(false);
+    const [dialogPosition, setDialogPosition] = useState({ x: 0, y: 0 });
     const month = viewDate.getMonth();
     const year = viewDate.getFullYear();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -42,8 +45,27 @@ export default function MonthView({ events }: MonthViewProps) {
         calendarDays.push({ date, isCurrentMonth: false });
     }
 
-    const handleDateClick = (date: Date) => {
-        setSelectedDate(date);
+    const handleDateClick = (date: Date, event: React.MouseEvent) => {
+        // Check if an event element was clicked using the closest() method
+        const eventElement = (event.target as HTMLElement).closest(
+            "[data-event-id], .calendar-event"
+        );
+
+        // Only show dialog if we didn't click on an event
+        if (!eventElement) {
+            setSelectedDate(date);
+            setDialogPosition({
+                x: event.clientX + 20,
+                y: event.clientY - 10,
+            });
+            setShowCreateEventDialog(true);
+        }
+    };
+
+    const handleEventClick = (eventId: number, event: React.MouseEvent) => {
+        // Handle event click (e.g., show event details)
+        console.log(`Event clicked: ${eventId}`);
+        // You could navigate to an event details page or show a different dialog
     };
 
     return (
@@ -65,6 +87,7 @@ export default function MonthView({ events }: MonthViewProps) {
                             key={index}
                             dayInfo={dayInfo}
                             index={index}
+                            onEventClick={handleEventClick}
                             onDateClick={handleDateClick}
                             isToday={isToday}
                             isSelected={isSelected}
@@ -73,6 +96,14 @@ export default function MonthView({ events }: MonthViewProps) {
                     ))}
                 </div>
             </div>
+            {showCreateEventDialog && (
+                <AddEventDialog
+                    initialStart={selectedDate}
+                    isOpen={showCreateEventDialog}
+                    position={dialogPosition}
+                    onClose={() => setShowCreateEventDialog(false)}
+                ></AddEventDialog>
+            )}
         </div>
     );
 }

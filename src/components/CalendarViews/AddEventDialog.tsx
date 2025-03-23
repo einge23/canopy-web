@@ -4,6 +4,7 @@ import {
     Dialog,
     DialogFooter,
     DialogHeader,
+    DialogTitle,
 } from "../ui/dialog";
 import { useForm } from "@tanstack/react-form";
 import { useAuth } from "@clerk/tanstack-start";
@@ -15,24 +16,26 @@ import {
     SelectItem,
     SelectTrigger,
 } from "../ui/select";
-import { getTimeOptionsStartingFrom } from "~/utils/calendar";
+import { createNewEvent, getTimeOptionsStartingFrom } from "~/utils/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Calendar } from "../ui/calendar";
 import { format } from "date-fns";
 import { useState } from "react";
 import {
     Blend,
-    Calendar1,
     CalendarIcon,
     CalendarPlus,
     MapPin,
     Pencil,
-    Redo,
-    Rewind,
     RotateCw,
 } from "lucide-react";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
+import { adjustColor } from "~/lib/random-helpers";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCalendar } from "~/contexts/CalendarContext";
+import { toast } from "sonner";
+import StyledButton from "../Navbar/StyledButton";
 
 interface AddEventDialogProps {
     isOpen: boolean;
@@ -49,6 +52,28 @@ export default function AddEventDialog({
 }: AddEventDialogProps) {
     const initialEnd = new Date(initialStart);
     initialEnd.setHours(initialStart.getHours() + 1);
+    const { viewType, viewDate, selectedDate } = useCalendar();
+
+    const currentMonth = viewDate.getMonth();
+    const currentYear = viewDate.getFullYear();
+
+    const queryClient = useQueryClient();
+
+    const { isPending, mutate } = useMutation({
+        mutationFn: (values: CreateEventRequest) =>
+            createNewEvent({ data: values }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["events", "monthly", currentYear, currentMonth],
+            });
+            onClose();
+            toast.success("Event added successfully");
+        },
+        onError: () => {
+            onClose();
+            toast.error("Failed to add event");
+        },
+    });
 
     const [calendarOpen, setCalendarOpen] = useState(false);
 
@@ -66,6 +91,7 @@ export default function AddEventDialog({
         } as CreateEventRequest,
         onSubmit: async (values) => {
             console.log(values);
+            mutate(values.value);
         },
     });
 
@@ -113,6 +139,7 @@ export default function AddEventDialog({
                 y={position.y}
                 className="overflow-y-auto max-w-[400px] overflow-x-hidden"
             >
+                <DialogTitle>Add Event</DialogTitle>
                 <div className="whitespace-normal break-words">
                     <div className="flex flex-col space-y-4">
                         <div className="flex items-center justify-start space-x-2 text-sm">
@@ -394,7 +421,7 @@ export default function AddEventDialog({
                                                         :   "hover:scale-110"
                                                     }`}
                                                     style={{
-                                                        backgroundColor: color,
+                                                        background: `linear-gradient(to bottom, ${color}, ${adjustColor(color, -20)})`,
                                                     }}
                                                     aria-label={`Select color ${color}`}
                                                 />
@@ -422,7 +449,6 @@ export default function AddEventDialog({
                                                         e.target.value
                                                     )
                                                 }
-                                                autoFocus
                                             />
                                         </>
                                     );
@@ -480,12 +506,13 @@ export default function AddEventDialog({
                 </div>
 
                 <DialogFooter>
-                    <button
+                    <StyledButton
+                        disabled={addEventForm.state.isSubmitting}
+                        isLoading={isPending}
                         onClick={addEventForm.handleSubmit}
-                        className="btn-primary"
                     >
                         Add Event
-                    </button>
+                    </StyledButton>
                 </DialogFooter>
             </CustomDialogContent>
         </Dialog>

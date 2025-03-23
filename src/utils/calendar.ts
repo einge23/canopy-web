@@ -3,7 +3,11 @@ import { getAuth } from "@clerk/tanstack-start/server";
 import { createServerFn } from "@tanstack/react-start";
 import { getWebRequest } from "@tanstack/react-start/server";
 import axios from "redaxios";
-import { getEventsByMonth } from "~/api/events";
+import {
+    createEvent,
+    CreateEventRequest,
+    getEventsByMonth,
+} from "~/api/events";
 import { CalendarEvent } from "~/models/events";
 
 export const isLeapYear = (year: number): boolean => {
@@ -144,6 +148,66 @@ interface MonthlyEventsParams {
     month: number;
     year: number;
 }
+
+export const createNewEvent = createServerFn({ method: "POST" })
+    .validator((params: unknown): CreateEventRequest => {
+        // Validate that params is an object
+        if (typeof params !== "object" || params === null) {
+            throw new Error("Parameters must be an object");
+        }
+
+        // Check that all required fields are present
+        const p = params as any;
+
+        if (!("name" in p) || typeof p.name !== "string") {
+            throw new Error("name parameter must be a string");
+        }
+
+        if (!("start" in p) || !(p.start instanceof Date)) {
+            throw new Error("start parameter must be a Date object");
+        }
+
+        if (!("end" in p) || !(p.end instanceof Date)) {
+            throw new Error("end parameter must be a Date object");
+        }
+
+        if (!("user_id" in p) || typeof p.user_id !== "string") {
+            throw new Error("user_id parameter must be a string");
+        }
+
+        if (!("color" in p) || typeof p.color !== "string") {
+            throw new Error("color parameter must be a string");
+        }
+
+        return {
+            name: p.name,
+            start: p.start,
+            end: p.end,
+            location: p.location,
+            description: p.description,
+            user_id: p.user_id,
+            color: p.color,
+            recurrence_rule: p.recurrence_rule,
+        } as CreateEventRequest;
+    })
+    .handler(async ({ data }): Promise<CalendarEvent> => {
+        const request = getWebRequest();
+        if (!request) {
+            throw new Error("Request not found");
+        }
+        const auth = await getAuth(request);
+
+        const userId = auth.userId;
+        const token = await auth.getToken();
+
+        if (!auth || !userId || !token) {
+            throw new Error("User not authenticated");
+        }
+
+        const newEvent = await createEvent(data, token);
+
+        return newEvent;
+    });
 
 export const getMonthlyEvents = createServerFn({ method: "GET" })
     .validator((params: unknown): MonthlyEventsParams => {
