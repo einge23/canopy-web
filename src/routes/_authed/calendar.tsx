@@ -3,15 +3,12 @@ import { useCalendar } from "~/contexts/CalendarContext";
 import MonthView from "~/components/CalendarViews/MonthView/MonthView";
 import WeekView from "~/components/CalendarViews/WeekView";
 import DayView from "~/components/CalendarViews/DayView/DayView";
-import { SignIn } from "@clerk/tanstack-start";
+import { SignIn, useAuth } from "@clerk/tanstack-start";
 import { AnimatedLoader } from "~/components/AnimatedLoader";
 import { useQuery } from "@tanstack/react-query";
-import {
-    filterEventsForDate,
-    filterEventsForMonth,
-    getMonthlyEvents,
-} from "~/utils/calendar";
+import { filterEventsForDate, filterEventsForMonth } from "~/utils/calendar";
 import { useMemo } from "react";
+import { getCurrentMonthEvents } from "~/api/events";
 export type DayInfo = {
     date: Date;
     isCurrentMonth: boolean;
@@ -46,33 +43,30 @@ function CalendarComponent() {
     // Use viewDate instead of selectedDate for consistency
     const currentMonth = viewDate.getMonth();
     const currentYear = viewDate.getFullYear();
+    const { getToken } = useAuth();
+
+    const queryKey = useMemo(
+        () => ["events", "monthly", currentYear, currentMonth],
+        [currentYear, currentMonth]
+    );
 
     const {
-        data: events = [],
+        data: events,
         isLoading,
         isError,
         error,
         refetch: refetchEvents,
     } = useQuery({
-        queryKey: ["events", "monthly", currentYear, currentMonth],
+        queryKey: queryKey,
         // Fix: Pass the object directly, not as named properties
-        queryFn: () => getMonthlyEvents(),
+        queryFn: async () => {
+            const token = await getToken();
+            if (!token) {
+                throw new Error("No token found");
+            }
+            return getCurrentMonthEvents(token);
+        },
     });
-
-    const dailyEvents = useMemo(
-        () => filterEventsForDate(selectedDate, events),
-        [selectedDate, events]
-    );
-
-    console.log(dailyEvents);
-
-    const monthEvents = useMemo(
-        () => filterEventsForMonth(events, currentMonth, currentYear),
-        [events, currentMonth, currentYear]
-    );
-
-    console.log("month Events", monthEvents);
-    console.log("events", events);
 
     if (isLoading) {
         return (
@@ -89,6 +83,19 @@ function CalendarComponent() {
             </div>
         );
     }
+
+    const dailyEvents = filterEventsForDate(selectedDate, events || []);
+
+    console.log(dailyEvents);
+
+    const monthEvents = filterEventsForMonth(
+        events || [],
+        currentMonth,
+        currentYear
+    );
+
+    console.log("month Events", monthEvents);
+    console.log("events", events);
 
     // Render the appropriate view based on viewType
     return (
