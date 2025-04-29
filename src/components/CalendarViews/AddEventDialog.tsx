@@ -1,4 +1,3 @@
-import { CreateEventRequest } from "~/models/events";
 import {
     CustomDialogContent,
     Dialog,
@@ -16,11 +15,7 @@ import {
     SelectItem,
     SelectTrigger,
 } from "../ui/select";
-import { createNewEvent, getTimeOptionsStartingFrom } from "~/utils/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { Calendar } from "../ui/calendar";
-import { format } from "date-fns";
-import { useState } from "react";
+import { getTimeOptionsStartingFrom } from "~/utils/calendar";
 import {
     Blend,
     CalendarIcon,
@@ -36,6 +31,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCalendar } from "~/contexts/CalendarContext";
 import { toast } from "sonner";
 import StyledButton from "../Navbar/StyledButton";
+import { CreateEventRequest } from "~/models/events";
+import { createEvent } from "~/api/events";
+import { format } from "date-fns";
+import { useState } from "react";
 
 interface AddEventDialogProps {
     isOpen: boolean;
@@ -43,6 +42,14 @@ interface AddEventDialogProps {
     position: { x: number; y: number };
     initialStart: Date;
 }
+
+type CreateEventFormValues = Omit<
+    CreateEventRequest,
+    "startTime" | "endTime"
+> & {
+    startTime: Date;
+    endTime: Date;
+};
 
 export default function AddEventDialog({
     isOpen,
@@ -53,6 +60,7 @@ export default function AddEventDialog({
     const initialEnd = new Date(initialStart);
     initialEnd.setHours(initialStart.getHours() + 1);
     const { viewType, viewDate, selectedDate } = useCalendar();
+    const { userId, getToken } = useAuth();
 
     const currentMonth = viewDate.getMonth();
     const currentYear = viewDate.getFullYear();
@@ -60,8 +68,14 @@ export default function AddEventDialog({
     const queryClient = useQueryClient();
 
     const { isPending, mutate } = useMutation({
-        mutationFn: (values: CreateEventRequest) =>
-            createNewEvent({ data: values }),
+        mutationFn: async (values: CreateEventRequest) => {
+            const token = await getToken();
+            if (!token) {
+                throw new Error("No token found");
+            }
+            console.log("Token:", token);
+            return createEvent(values, token);
+        },
         onSuccess: () => {
             queryClient.invalidateQueries({
                 queryKey: ["events", "monthly", currentYear, currentMonth],
@@ -75,62 +89,47 @@ export default function AddEventDialog({
         },
     });
 
-    const [calendarOpen, setCalendarOpen] = useState(false);
-
-    const { userId } = useAuth();
     const addEventForm = useForm({
         defaultValues: {
             name: "",
             description: "",
             location: "",
             color: "#55CBCD",
-            recurrence_rule: "Never",
-            start: initialStart,
-            end: initialEnd,
-            user_id: userId,
-        } as CreateEventRequest,
+            recurrenceRule: "Never",
+            startTime: initialStart,
+            endTime: initialEnd,
+            userId: userId ?? "",
+        } as CreateEventFormValues,
         onSubmit: async (values) => {
             console.log(values);
-            mutate(values.value);
+            const payload: CreateEventRequest = {
+                ...values.value,
+                startTime: values.value.startTime,
+                endTime: values.value.endTime,
+            };
+            mutate(payload);
         },
     });
 
-    const convertTimeToDate = (time: string) => {
+    const convertTimeToDate = (time: string, originalDate: Date) => {
         const [hours, minutes] = time.split(":");
-        const date = new Date(initialStart);
-        date.setHours(parseInt(hours));
-        date.setMinutes(parseInt(minutes));
+        const date = new Date(originalDate); // Use the original date
+        date.setHours(parseInt(hours, 10));
+        date.setMinutes(parseInt(minutes, 10));
         return date;
     };
 
-    const formatTime = (hours: number, minutes: number) => {
-        const date = new Date();
-        date.setHours(hours);
-        date.setMinutes(minutes);
+    const formatTime = (date: Date) => {
         return date.toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
-            hour12: true,
         });
-    };
-
-    const formatDate = (date: Date) => {
-        return format(date, "EEEE, MMMM do");
-    };
-
-    const updateDatePart = (currentDate: Date, newDate: Date) => {
-        const result = new Date(currentDate);
-        result.setFullYear(newDate.getFullYear());
-        result.setMonth(newDate.getMonth());
-        result.setDate(newDate.getDate());
-        return result;
     };
 
     return (
         <Dialog
             open={isOpen}
             onOpenChange={(open) => {
-                // Only close the dialog when specifically requested
                 if (!open) onClose();
             }}
         >
@@ -170,197 +169,93 @@ export default function AddEventDialog({
                         <div className="flex items-center justify-start space-x-2 text-sm">
                             <CalendarIcon />
                             <addEventForm.Field
-                                name="start"
+                                name="startTime"
                                 children={(field) => {
                                     return (
-                                        <Popover
-                                            open={calendarOpen}
-                                            onOpenChange={setCalendarOpen}
+                                        <Select
+                                            value={formatTime(
+                                                field.state.value
+                                            )}
+                                            onValueChange={(value) => {
+                                                const newDate =
+                                                    convertTimeToDate(
+                                                        value,
+                                                        field.state.value
+                                                    );
+                                                field.handleChange(newDate);
+                                            }}
                                         >
-                                            <PopoverTrigger className="flex items-center">
-                                                <p className="mr-2 hover:underline cursor-pointer">
-                                                    {formatDate(
+                                            <SelectTrigger>
+                                                <p className="hover:underline">
+                                                    {formatTime(
                                                         field.state.value
                                                     )}
                                                 </p>
-                                            </PopoverTrigger>
-                                            <PopoverContent
-                                                className="w-auto p-0"
-                                                side="bottom"
-                                                align="start"
-                                                sideOffset={5}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                }}
+                                            </SelectTrigger>
+                                            <SelectContent
+                                                position="popper"
+                                                className="max-h-[200px] overflow-y-auto"
                                             >
-                                                <Calendar
-                                                    mode="single"
-                                                    selected={field.state.value}
-                                                    onSelect={(date) => {
-                                                        if (date) {
-                                                            // Update start date while keeping time
-                                                            const newStart =
-                                                                updateDatePart(
-                                                                    field.state
-                                                                        .value,
-                                                                    date
-                                                                );
-                                                            field.handleChange(
-                                                                newStart
-                                                            );
-
-                                                            // Also update end date to same day
-                                                            const endValue =
-                                                                addEventForm.getFieldValue(
-                                                                    "end"
-                                                                );
-                                                            const newEnd =
-                                                                updateDatePart(
-                                                                    endValue,
-                                                                    date
-                                                                );
-                                                            addEventForm.setFieldValue(
-                                                                "end",
-                                                                newEnd
-                                                            );
-                                                            setCalendarOpen(
-                                                                false
-                                                            );
-                                                        }
-                                                    }}
-                                                    initialFocus
-                                                />
-                                            </PopoverContent>
-                                        </Popover>
-                                    );
-                                }}
-                            />
-
-                            <addEventForm.Field
-                                name="start"
-                                children={(field) => {
-                                    const timeString =
-                                        field.state.value.toLocaleTimeString(
-                                            [],
-                                            {
-                                                hour: "2-digit",
-                                                minute: "2-digit",
-                                                hour12: true,
-                                            }
-                                        );
-
-                                    const startTimeOptions =
-                                        getTimeOptionsStartingFrom(
-                                            field.state.value
-                                        );
-
-                                    return (
-                                        <>
-                                            <Select
-                                                value={timeString}
-                                                onValueChange={(value) => {
-                                                    field.handleChange(
-                                                        convertTimeToDate(value)
-                                                    );
-                                                }}
-                                            >
-                                                <SelectTrigger>
-                                                    <p className="hover:underline">
-                                                        {formatTime(
-                                                            field.state.value.getHours(),
-                                                            field.state.value.getMinutes()
-                                                        )}
-                                                    </p>
-                                                </SelectTrigger>
-                                                <SelectContent
-                                                    position="popper"
-                                                    className="max-h-[200px] overflow-y-auto"
-                                                >
-                                                    <SelectGroup>
-                                                        {startTimeOptions.map(
-                                                            (time) => (
-                                                                <SelectItem
-                                                                    key={
-                                                                        time.value
-                                                                    }
-                                                                    value={
-                                                                        time.value
-                                                                    }
-                                                                >
-                                                                    {time.label}
-                                                                </SelectItem>
-                                                            )
-                                                        )}
-                                                    </SelectGroup>
-                                                </SelectContent>
-                                            </Select>
-                                        </>
+                                                <SelectGroup>
+                                                    {getTimeOptionsStartingFrom(
+                                                        field.state.value
+                                                    ).map((time) => (
+                                                        <SelectItem
+                                                            key={time.value}
+                                                            value={time.value}
+                                                        >
+                                                            {time.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
                                     );
                                 }}
                             />
                             <span>-</span>
                             <addEventForm.Field
-                                name="end"
+                                name="endTime"
                                 children={(field) => {
-                                    const timeString =
-                                        field.state.value.toLocaleTimeString(
-                                            [],
-                                            {
-                                                hour: "2-digit",
-                                                minute: "2-digit",
-                                                hour12: true,
-                                            }
-                                        );
-
-                                    // Get the start time from the form state
-                                    const endTime =
-                                        addEventForm.getFieldValue("end");
-
-                                    // Generate time options starting from start time
-                                    const endTimeOptions =
-                                        getTimeOptionsStartingFrom(endTime);
-
                                     return (
-                                        <>
-                                            <Select
-                                                value={timeString}
-                                                onValueChange={(value) => {
-                                                    field.handleChange(
-                                                        convertTimeToDate(value)
+                                        <Select
+                                            value={formatTime(
+                                                field.state.value
+                                            )}
+                                            onValueChange={(value) => {
+                                                const newDate =
+                                                    convertTimeToDate(
+                                                        value,
+                                                        field.state.value
                                                     );
-                                                }}
+                                                field.handleChange(newDate);
+                                            }}
+                                        >
+                                            <SelectTrigger>
+                                                <p className="hover:underline">
+                                                    {formatTime(
+                                                        field.state.value
+                                                    )}
+                                                </p>
+                                            </SelectTrigger>
+                                            <SelectContent
+                                                position="popper"
+                                                className="max-h-[200px] overflow-y-auto"
                                             >
-                                                <SelectTrigger>
-                                                    <p className="hover:underline">
-                                                        {formatTime(
-                                                            field.state.value.getHours(),
-                                                            field.state.value.getMinutes()
-                                                        )}
-                                                    </p>
-                                                </SelectTrigger>
-                                                <SelectContent
-                                                    position="popper"
-                                                    className="max-h-[200px] overflow-y-auto"
-                                                >
-                                                    <SelectGroup>
-                                                        {endTimeOptions.map(
-                                                            (time) => (
-                                                                <SelectItem
-                                                                    key={
-                                                                        time.value
-                                                                    }
-                                                                    value={
-                                                                        time.value
-                                                                    }
-                                                                >
-                                                                    {time.label}
-                                                                </SelectItem>
-                                                            )
-                                                        )}
-                                                    </SelectGroup>
-                                                </SelectContent>
-                                            </Select>
-                                        </>
+                                                <SelectGroup>
+                                                    {getTimeOptionsStartingFrom(
+                                                        field.state.value
+                                                    ).map((time) => (
+                                                        <SelectItem
+                                                            key={time.value}
+                                                            value={time.value}
+                                                        >
+                                                            {time.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
                                     );
                                 }}
                             />
@@ -421,7 +316,10 @@ export default function AddEventDialog({
                                                         :   "hover:scale-110"
                                                     }`}
                                                     style={{
-                                                        background: `linear-gradient(to bottom, ${color}, ${adjustColor(color, -20)})`,
+                                                        background: `linear-gradient(to bottom, ${color}, ${adjustColor(
+                                                            color,
+                                                            -20
+                                                        )})`,
                                                     }}
                                                     aria-label={`Select color ${color}`}
                                                 />
@@ -457,7 +355,7 @@ export default function AddEventDialog({
                         </div>
                     </div>
                     <addEventForm.Field
-                        name="recurrence_rule"
+                        name="recurrenceRule"
                         children={(field) => {
                             const recurrenceOptions = [
                                 "Never",

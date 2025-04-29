@@ -1,11 +1,11 @@
 export interface CalendarEvent {
     id: number;
     name: string;
-    start: string; // ISO date string
-    end: string; // ISO date string
+    startTime: Date;
+    endTime: Date;
     location?: string;
     description?: string;
-    user_id: number;
+    user_id: string;
     color: string;
     recurrence_rule?: string;
     created_at: string;
@@ -13,12 +13,12 @@ export interface CalendarEvent {
 }
 
 export interface CreateEventRequest {
+    userId: string;
     name: string;
-    start: Date;
-    end: Date;
+    color: string;
+    startTime: Date;
+    endTime: Date;
+    recurrenceRule?: string;
     location?: string;
     description?: string;
-    user_id: string;
-    color: string;
-    recurrence_rule?: string;
 }

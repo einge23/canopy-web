@@ -56,13 +56,7 @@ function CalendarComponent() {
     } = useQuery({
         queryKey: ["events", "monthly", currentYear, currentMonth],
         // Fix: Pass the object directly, not as named properties
-        queryFn: () =>
-            getMonthlyEvents({
-                data: {
-                    month: currentMonth,
-                    year: currentYear,
-                },
-            }),
+        queryFn: () => getMonthlyEvents(),
     });
 
     const dailyEvents = useMemo(
@@ -76,6 +70,9 @@ function CalendarComponent() {
         () => filterEventsForMonth(events, currentMonth, currentYear),
         [events, currentMonth, currentYear]
     );
+
+    console.log("month Events", monthEvents);
+    console.log("events", events);
 
     if (isLoading) {
         return (
