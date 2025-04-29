@@ -16,7 +16,7 @@ import { createServerFn } from "@tanstack/react-start";
 import * as React from "react";
 import { getAuth } from "@clerk/tanstack-start/server";
 import { getWebRequest } from "@tanstack/react-start/server";
-import { DefaultCatchBoundary } from "~/components/DefaultCatchBoundary.js";
+import { DefaultCatchBoundary } from "~/contexts/DefaultCatchBoundary.js";
 import { NotFound } from "~/components/NotFound.js";
 import appCss from "~/styles/app.css?url";
 import globalsCss from "~/styles/globals.css?url";

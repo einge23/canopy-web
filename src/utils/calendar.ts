@@ -2,13 +2,12 @@ import { useAuth, useUser } from "@clerk/tanstack-start";
 import { getAuth } from "@clerk/tanstack-start/server";
 import { createServerFn } from "@tanstack/react-start";
 import { getWebRequest } from "@tanstack/react-start/server";
-import axios from "redaxios";
 import {
     createEvent,
-    CreateEventRequest,
+    getCurrentMonthEvents,
     getEventsByMonth,
 } from "~/api/events";
-import { CalendarEvent } from "~/models/events";
+import { CalendarEvent, CreateEventRequest } from "~/models/events";
 
 export const isLeapYear = (year: number): boolean => {
     return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
@@ -102,7 +101,7 @@ export const filterEventsForDate = (date: Date, events: CalendarEvent[]) => {
     if (!events || events.length === 0) return [];
 
     return events.filter((event) => {
-        const eventDate = new Date(event.start);
+        const eventDate = new Date(event.startTime);
         return (
             eventDate.getDate() === date.getDate() &&
             eventDate.getMonth() === date.getMonth() &&
@@ -137,11 +136,15 @@ export const filterEventsForMonth = (
     month: number,
     year: number
 ) => {
-    return events.filter(
-        (event) =>
-            new Date(event.start).getMonth() === month &&
-            new Date(event.start).getFullYear() === year
-    );
+    return events.filter((event) => {
+        console.log("event", event.startTime);
+        const eventDate = new Date(event.startTime);
+        console.log("eventDate", eventDate);
+        const eventMonth = eventDate.getMonth();
+        const eventYear = eventDate.getFullYear();
+
+        return eventMonth === month && eventYear === year;
+    });
 };
 
 interface MonthlyEventsParams {
@@ -163,16 +166,8 @@ export const createNewEvent = createServerFn({ method: "POST" })
             throw new Error("name parameter must be a string");
         }
 
-        if (!("start" in p) || !(p.start instanceof Date)) {
-            throw new Error("start parameter must be a Date object");
-        }
-
-        if (!("end" in p) || !(p.end instanceof Date)) {
-            throw new Error("end parameter must be a Date object");
-        }
-
-        if (!("user_id" in p) || typeof p.user_id !== "string") {
-            throw new Error("user_id parameter must be a string");
+        if (!("userId" in p) || typeof p.userId !== "string") {
+            throw new Error("userId parameter must be a string");
         }
 
         if (!("color" in p) || typeof p.color !== "string") {
@@ -181,11 +176,11 @@ export const createNewEvent = createServerFn({ method: "POST" })
 
         return {
             name: p.name,
-            start: p.start,
-            end: p.end,
+            startTime: p.startTime,
+            endTime: p.endTime,
             location: p.location,
             description: p.description,
-            user_id: p.user_id,
+            userId: p.userId,
             color: p.color,
             recurrence_rule: p.recurrence_rule,
         } as CreateEventRequest;
@@ -203,65 +198,34 @@ export const createNewEvent = createServerFn({ method: "POST" })
         if (!auth || !userId || !token) {
             throw new Error("User not authenticated");
         }
-
+        console.log("Creating event with data:", data);
+        console.log("Token:", token);
         const newEvent = await createEvent(data, token);
 
         return newEvent;
     });
 
-export const getMonthlyEvents = createServerFn({ method: "GET" })
-    .validator((params: unknown): MonthlyEventsParams => {
-        // Validate that params is an object
-        if (typeof params !== "object" || params === null) {
-            throw new Error("Parameters must be an object");
-        }
-
-        // Check that month and year exist and are of the right type
-        const p = params as any;
-
-        if (!("month" in p) || typeof p.month !== "number") {
-            throw new Error("month parameter must be a number");
-        }
-
-        if (p.month < 0 || p.month > 11) {
-            throw new Error("month must be between 0 and 11");
-        }
-
-        if (!("year" in p) || typeof p.year !== "number") {
-            throw new Error("year parameter must be a number");
-        }
-
-        if (p.year < 1900 || p.year > 2100) {
-            throw new Error("year must be between 1900 and 2100");
-        }
-
-        return {
-            month: p.month,
-            year: p.year,
-        };
-    })
-    .handler(async ({ data }): Promise<CalendarEvent[]> => {
-        const { month, year } = data;
-
-        // This part is correct - getting auth info on the server
+export const getMonthlyEvents = createServerFn({ method: "GET" }).handler(
+    async (): Promise<CalendarEvent[]> => {
         const request = getWebRequest();
         if (!request) {
             throw new Error("Request not found");
         }
+
         const auth = await getAuth(request);
-
-        const userId = auth.userId;
-        const token = await auth.getToken();
-
-        if (!auth || !userId || !token) {
+        if (!auth || !auth.userId) {
             throw new Error("User not authenticated");
         }
+        const token = await auth.getToken();
+        if (!token) {
+            throw new Error("Token not found");
+        }
 
-        // Get events for the specified month and year
-        const events = await getEventsByMonth(userId, month, year, token);
-
+        // calls your API helper
+        const events = await getCurrentMonthEvents(token);
         return events;
-    });
+    }
+);
 
 // Pre-defined constant array of all time options (96 values - 24 hours × 4 quarters)
 export const ALL_TIME_OPTIONS = [

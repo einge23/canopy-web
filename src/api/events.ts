@@ -1,16 +1,6 @@
-import { CalendarEvent } from "~/models/events";
+import { CalendarEvent, CreateEventRequest } from "~/models/events";
 import { api, getAuthenticatedApi } from "./api-base";
-
-export interface CreateEventRequest {
-    name: string;
-    start: Date;
-    end: Date;
-    location: string;
-    description: string;
-    user_id: string;
-    color: string;
-    recurrence_rule?: string;
-}
+import https from "https";
 
 export interface getUserEventsByDateRequest {
     user_id: string;
@@ -26,6 +16,12 @@ export async function createEvent(request: CreateEventRequest, token: string) {
     return response.data;
 }
 
+export async function getCurrentMonthEvents(token: string) {
+    const authApi = getAuthenticatedApi(token);
+    const response = await authApi.get<CalendarEvent[]>(`/events/currentMonth`);
+    return response.data;
+}
+
 export async function getUserEventsByDate(
     request: getUserEventsByDateRequest,
     token: string
@@ -35,7 +31,6 @@ export async function getUserEventsByDate(
     const response = await authApi.get<CalendarEvent[]>(
         `/events/daily/${request.user_id}/${request.date.toISOString()}`
     );
-    console.log(response);
     return response.data;
 }
 
