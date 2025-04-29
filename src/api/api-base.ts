@@ -2,7 +2,7 @@ import axios from "axios";
 const env = process.env.NODE_ENV || "development";
 const baseURL =
     env === "production" ?
-        process.env.VITE_CANOPY_API_URL
+        import.meta.env.VITE_CANOPY_API_URL
     :   "http://localhost:5172/api";
 
 // Create a function to get a configured API instance with auth
