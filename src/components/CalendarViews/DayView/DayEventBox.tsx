@@ -19,8 +19,8 @@ export default function DayEventBox({
     const eventsWithPositions = useMemo(() => {
         // Function to get event boundaries within current day
         const getEventBoundariesForDay = (event: CalendarEvent, date: Date) => {
-            const startTime = new Date(event.start);
-            const endTime = new Date(event.end);
+            const startTime = new Date(event.startTime);
+            const endTime = new Date(event.endTime);
 
             // Create date objects for start and end of current day
             const dayStart = new Date(date);
@@ -38,7 +38,9 @@ export default function DayEventBox({
 
         // Sort events by start time
         const sortedEvents = [...events].sort(
-            (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()
+            (a, b) =>
+                new Date(a.startTime).getTime() -
+                new Date(b.startTime).getTime()
         );
 
         // Map events to their display properties
