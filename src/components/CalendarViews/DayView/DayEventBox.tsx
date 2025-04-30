@@ -104,12 +104,15 @@ export default function DayEventBox({
                         }}
                         onClick={(e) => handleEventClick(e, event.id)}
                     >
-                        <div className="text-sm font-semibold text-white truncate">
+                        <div className="text-sm font-semibold text- truncate">
                             {event.name}
                         </div>
                         {heightPixels > 32 && (
-                            <div className="text-xs font-medium text-white">
+                            <div className="text-xs font-medium text-sage">
                                 {formatTime(startTime)} - {formatTime(endTime)}
+                                <div className="flex flex-row items-center mt-1">
+                                    <p className="mt-1">{event.location}</p>
+                                </div>
                             </div>
                         )}
                     </div>

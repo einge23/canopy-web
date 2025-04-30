@@ -22,3 +22,15 @@ export interface CreateEventRequest {
     location?: string;
     description?: string;
 }
+
+export interface EditEventRequest {
+    id: number;
+    userId: string;
+    name: string;
+    color: string;
+    startTime: Date;
+    endTime: Date;
+    recurrenceRule?: string;
+    location?: string;
+    description?: string;
+}

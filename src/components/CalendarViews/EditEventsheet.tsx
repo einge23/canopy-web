@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import {
     CalendarEvent,
+    EditEventRequest,
     CalendarEvent as UpdateEventRequest,
 } from "~/models/events";
 import { useEffect } from "react";
@@ -35,6 +36,9 @@ import { Textarea } from "../ui/textarea";
 import { getTimeOptionsStartingFrom } from "~/utils/calendar";
 import { adjustColor } from "~/lib/random-helpers";
 import { Label } from "../ui/label";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { editEvent } from "~/api/events";
+import { toast } from "sonner";
 // import { useMutation, useQueryClient } from "@tanstack/react-query";
 // import { updateEvent } from "~/api/events";
 // import { toast } from "sonner";
@@ -70,12 +74,60 @@ export function EditEventSheet({
     event,
 }: EditEventSheetProps) {
     const { userId, getToken } = useAuth();
-    // const queryClient = useQueryClient();
+    const queryClient = useQueryClient();
 
-    // const { mutate, isPending } = useMutation({ ... });
+    const eventDate = event?.startTime ? new Date(event.startTime) : new Date(); // Use event's date or fallback
+    const currentYear = eventDate.getFullYear();
+    const currentMonth = eventDate.getMonth();
+
+    const queryKey = ["events", "monthly", currentYear, currentMonth]; // Dynamic query key
+
+    const { mutate: editEventMutation, isPending } = useMutation({
+        mutationFn: async (updatedEventData: EditEventRequest) => {
+            const token = await getToken();
+            if (!token) {
+                throw new Error("No token found");
+            }
+            return editEvent(updatedEventData, token);
+        },
+        onMutate: async (updatedEventData: EditEventRequest) => {
+            await queryClient.cancelQueries({
+                queryKey: ["events", "monthly"],
+            });
+
+            const previousEvents =
+                queryClient.getQueryData<CalendarEvent[]>(queryKey);
+            queryClient.setQueryData(
+                queryKey,
+                (old: CalendarEvent[] | undefined) => {
+                    if (!old) return [];
+                    return old.map((ev) =>
+                        ev.id === updatedEventData.id ?
+                            { ...ev, ...updatedEventData }
+                        :   ev
+                    );
+                }
+            );
+
+            return { previousEvents };
+        },
+        onError: (err, updatedEventData, context) => {
+            if (context?.previousEvents) {
+                queryClient.setQueryData(queryKey, context.previousEvents);
+            }
+            toast.error("Failed to update event. Please try again.");
+            console.error("Error updating event:", err);
+        },
+        onSuccess: (data, updatedEventData) => {
+            queryClient.invalidateQueries({ queryKey: queryKey });
+            toast.success("Event updated successfully!");
+            onOpenChange(false);
+        },
+    });
 
     const editEventForm = useForm({
         defaultValues: {
+            id: event?.id ?? 0,
             name: event?.name ?? "",
             description: event?.description ?? "",
             location: event?.location ?? "",
@@ -84,13 +136,10 @@ export function EditEventSheet({
             endTime: event?.endTime ?? new Date(),
             userId: userId ?? "",
             recurrenceRule: event?.recurrence_rule ?? "Never",
-        },
+        } as EditEventRequest,
         onSubmit: async ({ value }) => {
             if (!event) return;
-            // const token = await getToken();
-            // if (!token) { /* handle error */ return; }
-            // mutate({ eventData: payload, token });
-            onOpenChange(false);
+            editEventMutation(value);
         },
     });
 
@@ -426,11 +475,10 @@ export function EditEventSheet({
                             type="submit"
                             className="bg-gradient-to-b from-emerald to-emerald/65 font-bold text-white shadow-md hover:brightness-90 hover:shadow-md transition-all duration-400 [text-shadow:_0_1px_1px_rgb(0_0_0_/_20%)] px-8 py-4 text-xl"
                             disabled={
-                                editEventForm.state
-                                    .isSubmitting /*|| isPending*/
+                                editEventForm.state.isSubmitting || isPending
                             }
                         >
-                            {editEventForm.state.isSubmitting /*|| isPending*/ ?
+                            {editEventForm.state.isSubmitting || isPending ?
                                 "Saving..."
                             :   "Save Changes"}
                         </Button>

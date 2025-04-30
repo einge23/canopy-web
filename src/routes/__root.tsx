@@ -119,13 +119,12 @@ function RootComponent() {
                         <Toaster />
                         <SidebarProvider>
                             <AppSidebar />
-                            <SidebarInset className="flex flex-col">
+                            <SidebarInset className="flex flex-col h-screen overflow-hidden">
                                 <Navbar />
                                 <hr />
-                                <main className="flex-1 bg-gradient-to-b from-background to-teal/80">
+                                <main className="flex-1 bg-gradient-to-b from-background to-teal/80 overflow-hidden">
                                     <Outlet />
                                 </main>
-                                <TanStackRouterDevtools position="bottom-right" />
                             </SidebarInset>
                         </SidebarProvider>
                     </CalendarProvider>
@@ -141,7 +140,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             <head suppressHydrationWarning>
                 <HeadContent />
             </head>
-            <body className="bg-gradient-to-b from-background to-teal/80">
+            <body className="h-screen bg-gradient-to-b from-background to-teal/80">
                 {children}
                 <Scripts />
             </body>

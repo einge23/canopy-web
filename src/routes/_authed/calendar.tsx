@@ -99,7 +99,7 @@ function CalendarComponent() {
 
     // Render the appropriate view based on viewType
     return (
-        <div className="p-4">
+        <div className="p-2">
             {viewType === "month" && <MonthView events={monthEvents} />}
             {viewType === "week" && <WeekView />}
             {viewType === "day" && <DayView events={dailyEvents} />}

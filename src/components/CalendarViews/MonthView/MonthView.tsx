@@ -80,32 +80,32 @@ export default function MonthView({ events }: MonthViewProps) {
     };
 
     return (
-        <div className="p-4">
-            <div className="border rounded-lg p-4">
-                <div className="grid grid-cols-7 gap-1">
-                    {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
-                        (day) => (
-                            <div
-                                key={day}
-                                className="p-2 text-center rounded-md font-semibold bg-gray-100"
-                            >
-                                {day}
-                            </div>
-                        )
-                    )}
-                    {calendarDays.map((dayInfo, index) => (
-                        <CalendarBox
-                            key={index}
-                            dayInfo={dayInfo}
-                            index={index}
-                            onEventClick={handleEventClick}
-                            onDateClick={handleDateClick}
-                            isToday={isToday}
-                            isSelected={isSelected}
-                            events={filterEventsForDate(dayInfo.date, events)}
-                        />
-                    ))}
-                </div>
+        <div className="p-2 flex flex-col">
+            <div className="grid grid-cols-7 gap-1 flex-shrink-0 mb-1">
+                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
+                    (day) => (
+                        <div
+                            key={day}
+                            className="p-2 text-center rounded-md font-semibold bg-gray-100"
+                        >
+                            {day}
+                        </div>
+                    )
+                )}
+            </div>
+            <div className="grid grid-cols-7 gap-1 grid-rows-[repeat(6,_minmax(0,_1fr))]">
+                {calendarDays.map((dayInfo, index) => (
+                    <CalendarBox
+                        key={index}
+                        dayInfo={dayInfo}
+                        index={index}
+                        onEventClick={handleEventClick}
+                        onDateClick={handleDateClick}
+                        isToday={isToday}
+                        isSelected={isSelected}
+                        events={filterEventsForDate(dayInfo.date, events)}
+                    />
+                ))}
             </div>
             {showCreateEventDialog && (
                 <AddEventDialog
