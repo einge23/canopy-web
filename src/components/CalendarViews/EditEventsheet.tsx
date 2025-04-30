@@ -34,6 +34,7 @@ import {
 import { Textarea } from "../ui/textarea";
 import { getTimeOptionsStartingFrom } from "~/utils/calendar";
 import { adjustColor } from "~/lib/random-helpers";
+import { Label } from "../ui/label";
 // import { useMutation, useQueryClient } from "@tanstack/react-query";
 // import { updateEvent } from "~/api/events";
 // import { toast } from "sonner";
@@ -142,136 +143,173 @@ export function EditEventSheet({
                         e.stopPropagation();
                         editEventForm.handleSubmit();
                     }}
-                    className="p-4 space-y-4"
+                    className="p-4 space-y-2"
                 >
                     <editEventForm.Field
                         name="name"
                         children={(field) => (
-                            <div className="flex items-center space-x-2 text-sm">
-                                <CalendarPlus className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                                <Input
-                                    type="text"
-                                    placeholder="Event name"
-                                    className="text-lg border-2 border-sage h-12 shadow-md rounded-md bg-sage/20"
-                                    id={field.name}
-                                    value={field.state.value}
-                                    onChange={(e) =>
-                                        field.setValue(e.target.value)
-                                    }
-                                    onBlur={field.handleBlur}
-                                />
+                            <div className="flex items-center space-x-3">
+                                <CalendarPlus className="h-8 w-8 text-muted-foreground flex-shrink-0" />
+                                <div className="flex-1 space-y-1">
+                                    <Label
+                                        htmlFor={field.name}
+                                        className="text-md font-medium"
+                                    >
+                                        Event Name
+                                    </Label>
+                                    <Input
+                                        type="text"
+                                        placeholder="Event name"
+                                        className="!text-lg border-2 border-sage h-14 shadow-md rounded-md bg-sage/20"
+                                        id={field.name}
+                                        value={field.state.value}
+                                        onChange={(e) =>
+                                            field.setValue(e.target.value)
+                                        }
+                                        onBlur={field.handleBlur}
+                                    />
+                                </div>
                             </div>
                         )}
                     />
 
-                    <div className="flex items-center space-x-2 text-sm">
-                        <CalendarIcon className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                        <editEventForm.Field
-                            name="startTime"
-                            children={(field) => (
-                                <Select
-                                    value={formatTime(field.state.value)}
-                                    onValueChange={(value) => {
-                                        const newDate = convertTimeToDate(
-                                            value,
-                                            field.state.value
-                                        );
-                                        field.handleChange(newDate);
-                                        const currentEndTime =
-                                            editEventForm.getFieldValue(
-                                                "endTime"
-                                            );
-                                        if (newDate >= currentEndTime) {
-                                            const newEndTime = new Date(
-                                                newDate
-                                            );
-                                            newEndTime.setHours(
-                                                newDate.getHours() + 1
-                                            );
-                                            editEventForm.setFieldValue(
-                                                "endTime",
-                                                newEndTime
-                                            );
-                                        }
-                                    }}
-                                >
-                                    <SelectTrigger className="flex-1 border-2 border-sage h-10 shadow-md rounded-md bg-sage/20">
-                                        <p>{formatTime(field.state.value)}</p>
-                                    </SelectTrigger>
-                                    <SelectContent
-                                        position="popper"
-                                        className="max-h-[200px] overflow-y-auto"
-                                    >
-                                        <SelectGroup>
-                                            {getTimeOptionsStartingFrom(
+                    <div className="flex items-center space-x-3 text-sm">
+                        <CalendarIcon className="h-8 w-8 text-muted-foreground flex-shrink-0" />
+                        <div className="flex-1 space-y-1">
+                            <Label className="text-sm font-medium">Time</Label>
+                            <div className="flex items-center space-x-2">
+                                <editEventForm.Field
+                                    name="startTime"
+                                    children={(field) => (
+                                        <Select
+                                            value={formatTime(
                                                 field.state.value
-                                            ).map((time) => (
-                                                <SelectItem
-                                                    key={time.value}
-                                                    value={time.value}
-                                                >
-                                                    {time.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                            )}
-                        />
-                        <span>-</span>
-                        <editEventForm.Field
-                            name="endTime"
-                            children={(field) => (
-                                <Select
-                                    value={formatTime(field.state.value)}
-                                    onValueChange={(value) => {
-                                        const newDate = convertTimeToDate(
-                                            value,
-                                            field.state.value
-                                        );
-                                        field.handleChange(newDate);
-                                    }}
-                                >
-                                    <SelectTrigger className="flex-1 border-2 border-sage h-10 shadow-md rounded-md bg-sage/20">
-                                        <p>{formatTime(field.state.value)}</p>
-                                    </SelectTrigger>
-                                    <SelectContent
-                                        position="popper"
-                                        className="max-h-[200px] overflow-y-auto"
-                                    >
-                                        <SelectGroup>
-                                            {getTimeOptionsStartingFrom(
+                                            )}
+                                            onValueChange={(value) => {
+                                                const newDate =
+                                                    convertTimeToDate(
+                                                        value,
+                                                        field.state.value
+                                                    );
+                                                field.handleChange(newDate);
+                                                const currentEndTime =
+                                                    editEventForm.getFieldValue(
+                                                        "endTime"
+                                                    );
+                                                if (newDate >= currentEndTime) {
+                                                    const newEndTime = new Date(
+                                                        newDate
+                                                    );
+                                                    newEndTime.setHours(
+                                                        newDate.getHours() + 1
+                                                    );
+                                                    editEventForm.setFieldValue(
+                                                        "endTime",
+                                                        newEndTime
+                                                    );
+                                                }
+                                            }}
+                                        >
+                                            <SelectTrigger className="flex-1 border-2 border-sage h-14 shadow-md rounded-md bg-sage/20">
+                                                <p className="!text-lg">
+                                                    {formatTime(
+                                                        field.state.value
+                                                    )}
+                                                </p>
+                                            </SelectTrigger>
+                                            <SelectContent
+                                                position="popper"
+                                                className="max-h-[200px] overflow-y-auto"
+                                            >
+                                                <SelectGroup>
+                                                    {getTimeOptionsStartingFrom(
+                                                        field.state.value
+                                                    ).map((time) => (
+                                                        <SelectItem
+                                                            key={time.value}
+                                                            value={time.value}
+                                                        >
+                                                            {time.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                />
+                                <span>-</span>
+                                <editEventForm.Field
+                                    name="endTime"
+                                    children={(field) => (
+                                        <Select
+                                            value={formatTime(
                                                 field.state.value
-                                            ).map((time) => (
-                                                <SelectItem
-                                                    key={time.value}
-                                                    value={time.value}
-                                                >
-                                                    {time.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                            )}
-                        />
+                                            )}
+                                            onValueChange={(value) => {
+                                                const newDate =
+                                                    convertTimeToDate(
+                                                        value,
+                                                        field.state.value
+                                                    );
+                                                field.handleChange(newDate);
+                                            }}
+                                        >
+                                            <SelectTrigger className="flex-1 border-2 border-sage h-14 shadow-md rounded-md bg-sage/20">
+                                                <p className="!text-lg">
+                                                    {formatTime(
+                                                        field.state.value
+                                                    )}
+                                                </p>
+                                            </SelectTrigger>
+                                            <SelectContent
+                                                position="popper"
+                                                className="max-h-[200px] overflow-y-auto"
+                                            >
+                                                <SelectGroup>
+                                                    {getTimeOptionsStartingFrom(
+                                                        editEventForm.getFieldValue(
+                                                            "startTime"
+                                                        )
+                                                    ).map((time) => (
+                                                        <SelectItem
+                                                            key={time.value}
+                                                            value={time.value}
+                                                        >
+                                                            {time.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                />
+                            </div>
+                        </div>
                     </div>
 
                     <editEventForm.Field
                         name="location"
                         children={(field) => (
-                            <div className="flex items-center space-x-2 text-sm">
-                                <MapPin className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                                <Input
-                                    placeholder="Location"
-                                    className="border-2 border-sage h-10 shadow-md rounded-md bg-sage/20"
-                                    id={field.name}
-                                    value={field.state.value}
-                                    onChange={(e) =>
-                                        field.setValue(e.target.value)
-                                    }
-                                    onBlur={field.handleBlur}
-                                />
+                            <div className="flex items-center space-x-3 text-sm">
+                                <MapPin className="h-8 w-8 text-muted-foreground flex-shrink-0" />
+                                <div className="flex-1 space-y-1">
+                                    <Label
+                                        htmlFor={field.name}
+                                        className="text-sm font-medium"
+                                    >
+                                        Location
+                                    </Label>
+                                    <Input
+                                        placeholder="Location"
+                                        className="border-2 border-sage h-14 shadow-md rounded-md bg-sage/20 !text-lg"
+                                        id={field.name}
+                                        value={field.state.value}
+                                        onChange={(e) =>
+                                            field.setValue(e.target.value)
+                                        }
+                                        onBlur={field.handleBlur}
+                                    />
+                                </div>
                             </div>
                         )}
                     />
@@ -279,27 +317,32 @@ export function EditEventSheet({
                     <editEventForm.Field
                         name="color"
                         children={(field) => (
-                            <div className="flex items-start space-x-2">
-                                <Blend className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
-                                <div className="flex flex-wrap gap-2">
-                                    {colorOptions.map((c) => (
-                                        <button
-                                            key={c}
-                                            type="button"
-                                            onClick={() =>
-                                                field.handleChange(c)
-                                            }
-                                            className={`w-8 h-8 rounded-md transition-all border-2 border-sage shadow-md ${
-                                                field.state.value === c ?
-                                                    "ring-2 ring-offset-2 ring-primary"
-                                                :   "hover:scale-110"
-                                            }`}
-                                            style={{
-                                                background: `linear-gradient(to bottom, ${c}, ${adjustColor(c, -20)})`,
-                                            }}
-                                            aria-label={`Select color ${c}`}
-                                        />
-                                    ))}
+                            <div className="flex items-start space-x-3">
+                                <Blend className="h-8 w-8 text-muted-foreground flex-shrink-0 mt-1" />
+                                <div className="flex-1 space-y-1">
+                                    <Label className="text-md font-medium">
+                                        Color
+                                    </Label>
+                                    <div className="flex flex-wrap gap-4">
+                                        {colorOptions.map((c) => (
+                                            <button
+                                                key={c}
+                                                type="button"
+                                                onClick={() =>
+                                                    field.handleChange(c)
+                                                }
+                                                className={`w-12 h-12 rounded-md transition-all border-2 border-sage shadow-md  ${
+                                                    field.state.value === c ?
+                                                        "ring-2 ring-offset-2 ring-primary"
+                                                    :   "hover:scale-110"
+                                                }`}
+                                                style={{
+                                                    background: `linear-gradient(to bottom, ${c}, ${adjustColor(c, -20)})`,
+                                                }}
+                                                aria-label={`Select color ${c}`}
+                                            />
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -308,19 +351,24 @@ export function EditEventSheet({
                     <editEventForm.Field
                         name="description"
                         children={(field) => (
-                            <div className="flex items-start space-x-2">
-                                <Pencil className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
-                                <Textarea
-                                    placeholder="Description"
-                                    className="border-2 border-sage shadow-md rounded-md bg-sage/20"
-                                    id={field.name}
-                                    value={field.state.value}
-                                    onChange={(e) =>
-                                        field.setValue(e.target.value)
-                                    }
-                                    onBlur={field.handleBlur}
-                                    rows={3}
-                                />
+                            <div className="flex items-start space-x-3">
+                                <Pencil className="h-8 w-8 text-muted-foreground flex-shrink-0 mt-1" />
+                                <div className="flex-1 space-y-1">
+                                    <Label className="text-md font-medium">
+                                        Description
+                                    </Label>
+                                    <Textarea
+                                        placeholder="Description"
+                                        className="border-2 border-sage shadow-md rounded-md bg-sage/20 !text-lg"
+                                        id={field.name}
+                                        value={field.state.value}
+                                        onChange={(e) =>
+                                            field.setValue(e.target.value)
+                                        }
+                                        onBlur={field.handleBlur}
+                                        rows={5}
+                                    />
+                                </div>
                             </div>
                         )}
                     />
@@ -328,47 +376,55 @@ export function EditEventSheet({
                     <editEventForm.Field
                         name="recurrenceRule"
                         children={(field) => (
-                            <div className="flex items-start space-x-2">
-                                <RotateCw className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
-                                <div className="flex flex-wrap gap-2">
-                                    {recurrenceOptions.map((option) => (
-                                        <Button
-                                            key={option}
-                                            type="button"
-                                            variant={
-                                                field.state.value === option ?
-                                                    "default"
-                                                :   "outline"
-                                            }
-                                            className={`px-3 py-1 text-sm h-auto border-2 border-sage shadow-md rounded-md ${
-                                                field.state.value === option ?
-                                                    "bg-primary text-primary-foreground"
-                                                :   "bg-sage/20 hover:bg-primary/10"
-                                            }`}
-                                            onClick={() =>
-                                                field.handleChange(option)
-                                            }
-                                        >
-                                            {option}
-                                        </Button>
-                                    ))}
+                            <div className="flex items-start space-x-3">
+                                <RotateCw className="h-8 w-8 text-muted-foreground flex-shrink-0 mt-1" />
+                                <div className="flex-1 space-y-1">
+                                    <Label className="text-md font-medium">
+                                        Recurrence Rule
+                                    </Label>
+                                    <div className="flex flex-wrap gap-3">
+                                        {recurrenceOptions.map((option) => (
+                                            <Button
+                                                key={option}
+                                                type="button"
+                                                variant={
+                                                    (
+                                                        field.state.value ===
+                                                        option
+                                                    ) ?
+                                                        "default"
+                                                    :   "outline"
+                                                }
+                                                className={`px-5 py-2.5 text-sm h-auto border-2 border-sage shadow-md rounded-md ${
+                                                    (
+                                                        field.state.value ===
+                                                        option
+                                                    ) ?
+                                                        "bg-primary text-primary-foreground"
+                                                    :   "bg-sage/20 hover:bg-primary/10"
+                                                }`}
+                                                onClick={() =>
+                                                    field.handleChange(option)
+                                                }
+                                            >
+                                                {option}
+                                            </Button>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         )}
                     />
 
-                    <SheetFooter className="pt-4">
+                    <SheetFooter className="pt-8">
                         <SheetClose asChild>
-                            <Button
-                                variant="outline"
-                                className="bg-gradient-to-b from-red-500/65 to-red-700/95 font-bold text-white shadow-sm hover:brightness-90 hover:shadow-md transition-all duration-400 [text-shadow:_0_1px_1px_rgb(0_0_0_/_20%)]"
-                            >
+                            <Button className="bg-gradient-to-b from-red-500/65 to-red-700/95 font-bold text-white shadow-sm hover:brightness-90 hover:shadow-md transition-all duration-400 [text-shadow:_0_1px_1px_rgb(0_0_0_/_20%)] px-8 py-4 text-xl">
                                 Cancel
                             </Button>
                         </SheetClose>
                         <Button
                             type="submit"
-                            className="bg-gradient-to-b from-emerald to-emerald/65 font-bold text-white shadow-md hover:brightness-90 hover:shadow-md transition-all duration-400 [text-shadow:_0_1px_1px_rgb(0_0_0_/_20%)]"
+                            className="bg-gradient-to-b from-emerald to-emerald/65 font-bold text-white shadow-md hover:brightness-90 hover:shadow-md transition-all duration-400 [text-shadow:_0_1px_1px_rgb(0_0_0_/_20%)] px-8 py-4 text-xl"
                             disabled={
                                 editEventForm.state
                                     .isSubmitting /*|| isPending*/
