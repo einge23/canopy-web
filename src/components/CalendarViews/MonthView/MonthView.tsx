@@ -9,6 +9,7 @@ import { CalendarEvent } from "~/models/events";
 import CalendarBox from "./CalendarBox";
 import { useState } from "react";
 import AddEventDialog from "../AddEventDialog";
+import { EditEventSheet } from "../EditEventsheet";
 
 type MonthViewProps = {
     events: CalendarEvent[];
@@ -21,6 +22,9 @@ export default function MonthView({ events }: MonthViewProps) {
     const year = viewDate.getFullYear();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const firstDayOfMonth = new Date(year, month, 1).getDay();
+
+    const [showEditEventSheet, setShowEditEventSheet] = useState(false);
+    const [eventToEdit, setEventToEdit] = useState<CalendarEvent | null>(null);
 
     // Create calendar days array
     const calendarDays = [];
@@ -63,9 +67,16 @@ export default function MonthView({ events }: MonthViewProps) {
     };
 
     const handleEventClick = (eventId: number, event: React.MouseEvent) => {
-        // Handle event click (e.g., show event details)
-        console.log(`Event clicked: ${eventId}`);
-        // You could navigate to an event details page or show a different dialog
+        console.log("clicked");
+        event.stopPropagation();
+        const clickedEvent = events.find((ev) => ev.id === eventId);
+        console.log("Clicked event:", clickedEvent);
+        if (clickedEvent) {
+            setEventToEdit(clickedEvent);
+            setShowEditEventSheet(true);
+        } else {
+            console.error("Could not find event with ID:", eventId);
+        }
     };
 
     return (
@@ -104,6 +115,11 @@ export default function MonthView({ events }: MonthViewProps) {
                     onClose={() => setShowCreateEventDialog(false)}
                 ></AddEventDialog>
             )}
+            <EditEventSheet
+                open={showEditEventSheet}
+                onOpenChange={setShowEditEventSheet}
+                event={eventToEdit}
+            />
         </div>
     );
 }

@@ -32,7 +32,7 @@ export default function CalendarBox({
     };
 
     const handleEventClick = (event: React.MouseEvent, eventId: number) => {
-        event.stopPropagation(); // Prevent day click from being triggered
+        event.stopPropagation();
         if (onEventClick) {
             onEventClick(eventId, event);
         }
