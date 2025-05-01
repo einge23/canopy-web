@@ -177,7 +177,7 @@ export function EditEventSheet({
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
-            <SheetContent className="sm:max-w-[600px] overflow-y-auto">
+            <SheetContent className="sm:max-w-[600px] overflow-y-hidden">
                 <SheetHeader className="border-sage rounded-md m-2 border-2 shadow-md bg-sage/20">
                     <SheetTitle>Edit Event</SheetTitle>
                     <SheetDescription>
@@ -209,7 +209,7 @@ export function EditEventSheet({
                                     <Input
                                         type="text"
                                         placeholder="Event name"
-                                        className="!text-lg border-2 border-sage h-14 shadow-md rounded-md bg-sage/20"
+                                        className="!text-lg border-2 border-sage h-12 shadow-md rounded-md bg-sage/20"
                                         id={field.name}
                                         value={field.state.value}
                                         onChange={(e) =>
@@ -259,7 +259,7 @@ export function EditEventSheet({
                                                 }
                                             }}
                                         >
-                                            <SelectTrigger className="flex-1 border-2 border-sage h-14 shadow-md rounded-md bg-sage/20">
+                                            <SelectTrigger className="flex-1 border-2 border-sage h-12 shadow-md rounded-md bg-sage/20">
                                                 <p className="!text-lg">
                                                     {formatTime(
                                                         field.state.value
@@ -303,7 +303,7 @@ export function EditEventSheet({
                                                 field.handleChange(newDate);
                                             }}
                                         >
-                                            <SelectTrigger className="flex-1 border-2 border-sage h-14 shadow-md rounded-md bg-sage/20">
+                                            <SelectTrigger className="flex-1 border-2 border-sage h-12 shadow-md rounded-md bg-sage/20">
                                                 <p className="!text-lg">
                                                     {formatTime(
                                                         field.state.value
@@ -350,7 +350,7 @@ export function EditEventSheet({
                                     </Label>
                                     <Input
                                         placeholder="Location"
-                                        className="border-2 border-sage h-14 shadow-md rounded-md bg-sage/20 !text-lg"
+                                        className="border-2 border-sage placeholder:text-gray-500 h-12 shadow-md rounded-md bg-sage/20 !text-lg"
                                         id={field.name}
                                         value={field.state.value}
                                         onChange={(e) =>
@@ -408,14 +408,14 @@ export function EditEventSheet({
                                     </Label>
                                     <Textarea
                                         placeholder="Description"
-                                        className="border-2 border-sage shadow-md rounded-md bg-sage/20 !text-lg"
+                                        className="border-2 border-sage shadow-md rounded-md bg-sage/20 !text-lg placeholder:text-gray-500"
                                         id={field.name}
                                         value={field.state.value}
                                         onChange={(e) =>
                                             field.setValue(e.target.value)
                                         }
                                         onBlur={field.handleBlur}
-                                        rows={5}
+                                        rows={3}
                                     />
                                 </div>
                             </div>

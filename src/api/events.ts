@@ -20,9 +20,16 @@ export async function createEvent(request: CreateEventRequest, token: string) {
     return response.data;
 }
 
-export async function getCurrentMonthEvents(token: string) {
+export async function getMonthlyEvents(
+    token: string,
+    month: number,
+    year: number
+) {
     const authApi = getAuthenticatedApi(token);
-    const response = await authApi.get<CalendarEvent[]>(`/events/currentMonth`);
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const response = await authApi.get<CalendarEvent[]>(
+        `/events?month=${month + 1}&year=${year}&timezone=${encodeURIComponent(timezone)}`
+    );
     return response.data;
 }
 

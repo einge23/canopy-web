@@ -80,7 +80,7 @@ export default function MonthView({ events }: MonthViewProps) {
     };
 
     return (
-        <div className="p-2 flex flex-col">
+        <div className="p-2 flex flex-col h-[calc(100vh-78px)] min-h-0">
             <div className="grid grid-cols-7 gap-1 flex-shrink-0 mb-1">
                 {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
                     (day) => (
@@ -93,19 +93,27 @@ export default function MonthView({ events }: MonthViewProps) {
                     )
                 )}
             </div>
-            <div className="grid grid-cols-7 gap-1 grid-rows-[repeat(6,_minmax(0,_1fr))]">
-                {calendarDays.map((dayInfo, index) => (
-                    <CalendarBox
-                        key={index}
-                        dayInfo={dayInfo}
-                        index={index}
-                        onEventClick={handleEventClick}
-                        onDateClick={handleDateClick}
-                        isToday={isToday}
-                        isSelected={isSelected}
-                        events={filterEventsForDate(dayInfo.date, events)}
-                    />
-                ))}
+            {/* Add flex-grow to make the grid take available space */}
+            {/* Change row height definition to use 1fr for dynamic sizing */}
+            <div className="grid grid-cols-7 gap-1 grid-rows-[repeat(5,_minmax(0,_1fr))] flex-grow">
+                {calendarDays.map(
+                    (dayInfo, index) =>
+                        index < 35 && (
+                            <CalendarBox
+                                key={index}
+                                dayInfo={dayInfo}
+                                index={index}
+                                onEventClick={handleEventClick}
+                                onDateClick={handleDateClick}
+                                isToday={isToday}
+                                isSelected={isSelected}
+                                events={filterEventsForDate(
+                                    dayInfo.date,
+                                    events
+                                )}
+                            />
+                        )
+                )}
             </div>
             {showCreateEventDialog && (
                 <AddEventDialog

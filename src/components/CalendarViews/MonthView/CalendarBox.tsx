@@ -43,21 +43,18 @@ export default function CalendarBox({
         <div
             key={index}
             onClick={handleClick}
-            className={`p-1 md:p-2 h-full border rounded cursor-pointer overflow-hidden flex flex-col ${
+            className={`p-1 md:p-2 border rounded cursor-pointer overflow-hidden flex flex-col ${
                 !dayInfo.isCurrentMonth ? "bg-teal text-gray-100"
                 : isSelected(dayInfo.date, selectedDate) ?
-                    " bg-sage  border-2 border-teal"
+                    "bg-sage  border-2 border-teal"
                 : isToday(dayInfo.date) ? "bg-teal/50 border-gray-100"
                 : ""
             }`}
         >
-            {/* Use responsive text size */}
-            <div className="text-right text-xs md:text-sm mb-1">
+            <div className="text-right text-xs md:text-sm mb-1 flex-shrink-0">
                 {dayInfo.date.getDate()}
             </div>
-            <div className="flex-grow space-y-1">
-                {" "}
-                {/* Allow events to fill remaining space */}
+            <div className="space-y-1 overflow-hidden min-h-0 flex-grow">
                 {visibleEvents.map((event) => (
                     <div
                         key={event.id}
@@ -76,7 +73,7 @@ export default function CalendarBox({
             {remainingCount > 0 && (
                 <div
                     // Use responsive height and text size
-                    className="calendar-event w-full h-5 md:h-6 hover:brightness-90 rounded-md text-[10px] md:text-xs mt-1 px-1 bg-background text-gray-700 flex items-center justify-center font-medium flex-shrink-0" // Prevent shrinking
+                    className="calendar-event w-full h-5 md:h-6 hover:brightness-90 rounded-md text-[10px] md:text-xs mt-auto px-1 bg-background text-gray-700 flex items-center justify-center font-medium flex-shrink-0"
                     onClick={(e) => e.stopPropagation()} // Just stop propagation for the "more" indicator
                 >
                     + {remainingCount} more

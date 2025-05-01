@@ -119,10 +119,10 @@ function RootComponent() {
                         <Toaster />
                         <SidebarProvider>
                             <AppSidebar />
-                            <SidebarInset className="flex flex-col h-screen overflow-hidden">
+                            <SidebarInset className="flex flex-col">
                                 <Navbar />
                                 <hr />
-                                <main className="flex-1 bg-gradient-to-b from-background to-teal/80 overflow-hidden">
+                                <main className="h-[calc(100vh-69px)] bg-gradient-to-b from-background to-teal/80 overflow-hidden">
                                     <Outlet />
                                 </main>
                             </SidebarInset>
@@ -140,7 +140,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             <head suppressHydrationWarning>
                 <HeadContent />
             </head>
-            <body className="h-screen bg-gradient-to-b from-background to-teal/80">
+            <body className="bg-gradient-to-b from-background to-teal/80">
                 {children}
                 <Scripts />
             </body>

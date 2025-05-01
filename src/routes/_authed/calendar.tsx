@@ -8,7 +8,7 @@ import { AnimatedLoader } from "~/components/AnimatedLoader";
 import { useQuery } from "@tanstack/react-query";
 import { filterEventsForDate, filterEventsForMonth } from "~/utils/calendar";
 import { useMemo } from "react";
-import { getCurrentMonthEvents } from "~/api/events";
+import { getMonthlyEvents } from "~/api/events";
 export type DayInfo = {
     date: Date;
     isCurrentMonth: boolean;
@@ -58,13 +58,12 @@ function CalendarComponent() {
         refetch: refetchEvents,
     } = useQuery({
         queryKey: queryKey,
-        // Fix: Pass the object directly, not as named properties
         queryFn: async () => {
             const token = await getToken();
             if (!token) {
                 throw new Error("No token found");
             }
-            return getCurrentMonthEvents(token);
+            return getMonthlyEvents(token, currentMonth, currentYear);
         },
     });
 
@@ -99,7 +98,7 @@ function CalendarComponent() {
 
     // Render the appropriate view based on viewType
     return (
-        <div className="p-2">
+        <div className="p-2 h-full">
             {viewType === "month" && <MonthView events={monthEvents} />}
             {viewType === "week" && <WeekView />}
             {viewType === "day" && <DayView events={dailyEvents} />}
