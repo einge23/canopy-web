@@ -56,12 +56,43 @@ export default function MonthView({ events }: MonthViewProps) {
             "[data-event-id], .calendar-event"
         );
 
-        // Only show dialog if we didn't click on an event
         if (!eventElement) {
             setSelectedDate(date);
+
+            const DIALOG_WIDTH_ESTIMATE = 400; // Adjust if your dialog width is different
+            const DIALOG_HEIGHT_ESTIMATE = 500; // Adjust if your dialog height is different
+            const PADDING = 20; // Space from cursor and window edge
+
+            const clickX = event.clientX;
+            const clickY = event.clientY;
+
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+
+            let finalX = clickX + PADDING;
+            let finalY = clickY - PADDING; // Initial Y position attempt
+
+            // Adjust X if it overflows right edge
+            if (finalX + DIALOG_WIDTH_ESTIMATE > viewportWidth) {
+                finalX = clickX - DIALOG_WIDTH_ESTIMATE - PADDING; // Position left of cursor
+            }
+            // Adjust X if it overflows left edge (after potential left shift)
+            if (finalX < PADDING) {
+                finalX = PADDING;
+            }
+
+            // Adjust Y if it overflows bottom edge
+            if (finalY + DIALOG_HEIGHT_ESTIMATE > viewportHeight) {
+                finalY = clickY - DIALOG_HEIGHT_ESTIMATE - PADDING; // Position above cursor
+            }
+            // Adjust Y if it overflows top edge
+            if (finalY < PADDING) {
+                finalY = PADDING;
+            }
+
             setDialogPosition({
-                x: event.clientX + 20,
-                y: event.clientY - 10,
+                x: finalX,
+                y: finalY,
             });
             setShowCreateEventDialog(true);
         }
