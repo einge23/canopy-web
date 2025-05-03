@@ -122,10 +122,9 @@ function RootComponent() {
                             <SidebarInset className="flex flex-col">
                                 <Navbar />
                                 <hr />
-                                <main className="flex-1 bg-gradient-to-b from-background to-teal/80">
+                                <main className="h-[calc(100vh-69px)] bg-gradient-to-b from-background to-teal/80 overflow-hidden">
                                     <Outlet />
                                 </main>
-                                <TanStackRouterDevtools position="bottom-right" />
                             </SidebarInset>
                         </SidebarProvider>
                     </CalendarProvider>

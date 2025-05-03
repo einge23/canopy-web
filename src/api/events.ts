@@ -1,4 +1,8 @@
-import { CalendarEvent, CreateEventRequest } from "~/models/events";
+import {
+    CalendarEvent,
+    CreateEventRequest,
+    EditEventRequest,
+} from "~/models/events";
 import { api, getAuthenticatedApi } from "./api-base";
 import https from "https";
 
@@ -16,56 +20,21 @@ export async function createEvent(request: CreateEventRequest, token: string) {
     return response.data;
 }
 
-export async function getCurrentMonthEvents(token: string) {
-    const authApi = getAuthenticatedApi(token);
-    const response = await authApi.get<CalendarEvent[]>(`/events/currentMonth`);
-    return response.data;
-}
-
-export async function getUserEventsByDate(
-    request: getUserEventsByDateRequest,
-    token: string
-) {
-    const authApi = getAuthenticatedApi(token);
-
-    const response = await authApi.get<CalendarEvent[]>(
-        `/events/daily/${request.user_id}/${request.date.toISOString()}`
-    );
-    return response.data;
-}
-
-// Add function for getting all user events
-export async function getUserEvents(userId: string, token: string) {
-    const authApi = getAuthenticatedApi(token);
-    const response = await authApi.get<CalendarEvent[]>(
-        `/events/user/${userId}`
-    );
-    return response.data;
-}
-
-// Add function for editing events
-export async function editEvent(event: CalendarEvent, token: string) {
-    const authApi = getAuthenticatedApi(token);
-    const response = await authApi.put<CalendarEvent>("/events/edit", event);
-    return response.data;
-}
-
-export async function deleteEvent(eventId: number, token: string) {
-    const authApi = getAuthenticatedApi(token);
-    const response = await authApi.delete<CalendarEvent>(`/events/${eventId}`);
-    return response.data;
-}
-
-export async function getEventsByMonth(
-    userId: string,
+export async function getMonthlyEvents(
+    token: string,
     month: number,
-    year: number,
-    token: string
+    year: number
 ) {
     const authApi = getAuthenticatedApi(token);
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const response = await authApi.get<CalendarEvent[]>(
-        `/events/monthly/${userId}/${year}/${month + 1}`
+        `/events?month=${month + 1}&year=${year}&timezone=${encodeURIComponent(timezone)}`
     );
-    console.log(response.data);
+    return response.data;
+}
+
+export async function editEvent(request: EditEventRequest, token: string) {
+    const authApi = getAuthenticatedApi(token);
+    const response = await authApi.put<CalendarEvent>(`/events/edit`, request);
     return response.data;
 }

@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { filterEventsForDate } from "~/utils/calendar";
 import { AnimatedLoader } from "~/components/AnimatedLoader";
 import AddEventDialog from "../AddEventDialog";
+import { EditEventSheet } from "../EditEventsheet";
 
 type DayViewProps = {
     events: CalendarEvent[];
@@ -19,6 +20,9 @@ export default function DayView({ events, isLoading = false }: DayViewProps) {
     const [showEventForm, setShowEventForm] = useState(false);
     const [popoverTime, setPopoverTime] = useState<Date | null>(null);
     const [dialogPosition, setDialogPosition] = useState({ left: 0, top: 0 });
+
+    const [showEditEventSheet, setShowEditEventSheet] = useState(false);
+    const [eventToEdit, setEventToEdit] = useState<CalendarEvent | null>(null);
 
     const [placeholderEvent, setPlaceholderEvent] = useState<{
         top: number;
@@ -152,6 +156,22 @@ export default function DayView({ events, isLoading = false }: DayViewProps) {
         );
     }, [placeholderEvent, hourHeight]);
 
+    const handleEventClick = useCallback(
+        (eventId: number, event: React.MouseEvent) => {
+            event.stopPropagation();
+            const clickedEvent = events.find((ev) => ev.id === eventId);
+            if (clickedEvent) {
+                setEventToEdit(clickedEvent);
+                setShowEditEventSheet(true);
+                setShowEventForm(false); // Close add form if open
+                setPlaceholderEvent(null); // Clear placeholder
+            } else {
+                console.error("Could not find event with ID:", eventId);
+            }
+        },
+        [events]
+    );
+
     // Memoize hour elements to prevent unnecessary re-renders
     const hourElements = useMemo(() => {
         return Array.from({ length: 24 }, (_, hour) => (
@@ -199,6 +219,7 @@ export default function DayView({ events, isLoading = false }: DayViewProps) {
                                 viewDate={viewDate}
                                 hourHeight={hourHeight}
                                 className="pointer-events-auto"
+                                onEventClick={handleEventClick}
                             />
                             {placeholderEventBox}
                         </>
@@ -216,6 +237,11 @@ export default function DayView({ events, isLoading = false }: DayViewProps) {
                         initialStart={popoverTime || viewDate}
                     />
                 )}
+                <EditEventSheet
+                    open={showEditEventSheet}
+                    onOpenChange={setShowEditEventSheet}
+                    event={eventToEdit}
+                />
             </div>
         </div>
     );

@@ -7,6 +7,7 @@ type DayEventBoxProps = {
     hourHeight: number;
     viewDate: Date;
     className?: string;
+    onEventClick?: (eventId: number, event: React.MouseEvent) => void;
 };
 
 export default function DayEventBox({
@@ -14,6 +15,7 @@ export default function DayEventBox({
     hourHeight,
     viewDate,
     className = "",
+    onEventClick,
 }: DayEventBoxProps) {
     // Calculate event positions for the day
     const eventsWithPositions = useMemo(() => {
@@ -81,6 +83,12 @@ export default function DayEventBox({
         });
     };
 
+    const handleEventClick = (e: React.MouseEvent, eventId: number) => {
+        if (onEventClick) {
+            onEventClick(eventId, e);
+        }
+    };
+
     return (
         <div className={className}>
             {eventsWithPositions.map(
@@ -94,13 +102,17 @@ export default function DayEventBox({
                             background: `linear-gradient(to bottom, ${event.color}, ${adjustColor(event.color, -20)})`,
                             zIndex: 10,
                         }}
+                        onClick={(e) => handleEventClick(e, event.id)}
                     >
-                        <div className="text-sm font-semibold text-white truncate">
+                        <div className="text-sm font-semibold text- truncate">
                             {event.name}
                         </div>
                         {heightPixels > 32 && (
-                            <div className="text-xs font-medium text-white">
+                            <div className="text-xs font-medium text-sage">
                                 {formatTime(startTime)} - {formatTime(endTime)}
+                                <div className="flex flex-row items-center mt-1">
+                                    <p className="mt-1">{event.location}</p>
+                                </div>
                             </div>
                         )}
                     </div>

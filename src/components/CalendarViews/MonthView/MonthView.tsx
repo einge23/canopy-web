@@ -9,10 +9,12 @@ import { CalendarEvent } from "~/models/events";
 import CalendarBox from "./CalendarBox";
 import { useState } from "react";
 import AddEventDialog from "../AddEventDialog";
+import { EditEventSheet } from "../EditEventsheet";
 
 type MonthViewProps = {
     events: CalendarEvent[];
 };
+
 export default function MonthView({ events }: MonthViewProps) {
     const { viewDate, selectedDate, setSelectedDate } = useCalendar();
     const [showCreateEventDialog, setShowCreateEventDialog] = useState(false);
@@ -21,6 +23,9 @@ export default function MonthView({ events }: MonthViewProps) {
     const year = viewDate.getFullYear();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const firstDayOfMonth = new Date(year, month, 1).getDay();
+
+    const [showEditEventSheet, setShowEditEventSheet] = useState(false);
+    const [eventToEdit, setEventToEdit] = useState<CalendarEvent | null>(null);
 
     // Create calendar days array
     const calendarDays = [];
@@ -51,50 +56,94 @@ export default function MonthView({ events }: MonthViewProps) {
             "[data-event-id], .calendar-event"
         );
 
-        // Only show dialog if we didn't click on an event
         if (!eventElement) {
             setSelectedDate(date);
+
+            const DIALOG_WIDTH_ESTIMATE = 400; // Adjust if your dialog width is different
+            const DIALOG_HEIGHT_ESTIMATE = 500; // Adjust if your dialog height is different
+            const PADDING = 20; // Space from cursor and window edge
+
+            const clickX = event.clientX;
+            const clickY = event.clientY;
+
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+
+            let finalX = clickX + PADDING;
+            let finalY = clickY - PADDING; // Initial Y position attempt
+
+            // Adjust X if it overflows right edge
+            if (finalX + DIALOG_WIDTH_ESTIMATE > viewportWidth) {
+                finalX = clickX - DIALOG_WIDTH_ESTIMATE - PADDING; // Position left of cursor
+            }
+            // Adjust X if it overflows left edge (after potential left shift)
+            if (finalX < PADDING) {
+                finalX = PADDING;
+            }
+
+            // Adjust Y if it overflows bottom edge
+            if (finalY + DIALOG_HEIGHT_ESTIMATE > viewportHeight) {
+                finalY = clickY - DIALOG_HEIGHT_ESTIMATE - PADDING; // Position above cursor
+            }
+            // Adjust Y if it overflows top edge
+            if (finalY < PADDING) {
+                finalY = PADDING;
+            }
+
             setDialogPosition({
-                x: event.clientX + 20,
-                y: event.clientY - 10,
+                x: finalX,
+                y: finalY,
             });
             setShowCreateEventDialog(true);
         }
     };
 
     const handleEventClick = (eventId: number, event: React.MouseEvent) => {
-        // Handle event click (e.g., show event details)
-        console.log(`Event clicked: ${eventId}`);
-        // You could navigate to an event details page or show a different dialog
+        console.log("clicked");
+        event.stopPropagation();
+        const clickedEvent = events.find((ev) => ev.id === eventId);
+        console.log("Clicked event:", clickedEvent);
+        if (clickedEvent) {
+            setEventToEdit(clickedEvent);
+            setShowEditEventSheet(true);
+        } else {
+            console.error("Could not find event with ID:", eventId);
+        }
     };
 
     return (
-        <div className="p-4">
-            <div className="border rounded-lg p-4">
-                <div className="grid grid-cols-7 gap-1">
-                    {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
-                        (day) => (
-                            <div
-                                key={day}
-                                className="p-2 text-center rounded-md font-semibold bg-gray-100"
-                            >
-                                {day}
-                            </div>
+        <div className="p-2 flex flex-col h-[calc(100vh-78px)] min-h-0">
+            <div className="grid grid-cols-7 gap-1 flex-shrink-0 mb-1">
+                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
+                    (day) => (
+                        <div
+                            key={day}
+                            className="p-2 text-center rounded-md font-semibold bg-gray-100"
+                        >
+                            {day}
+                        </div>
+                    )
+                )}
+            </div>
+            <div className="grid grid-cols-7 gap-1 grid-rows-[repeat(5,_minmax(0,_1fr))] flex-grow">
+                {calendarDays.map(
+                    (dayInfo, index) =>
+                        index < 35 && (
+                            <CalendarBox
+                                key={index}
+                                dayInfo={dayInfo}
+                                index={index}
+                                onEventClick={handleEventClick}
+                                onDateClick={handleDateClick}
+                                isToday={isToday}
+                                isSelected={isSelected}
+                                events={filterEventsForDate(
+                                    dayInfo.date,
+                                    events
+                                )}
+                            />
                         )
-                    )}
-                    {calendarDays.map((dayInfo, index) => (
-                        <CalendarBox
-                            key={index}
-                            dayInfo={dayInfo}
-                            index={index}
-                            onEventClick={handleEventClick}
-                            onDateClick={handleDateClick}
-                            isToday={isToday}
-                            isSelected={isSelected}
-                            events={filterEventsForDate(dayInfo.date, events)}
-                        />
-                    ))}
-                </div>
+                )}
             </div>
             {showCreateEventDialog && (
                 <AddEventDialog
@@ -104,6 +153,11 @@ export default function MonthView({ events }: MonthViewProps) {
                     onClose={() => setShowCreateEventDialog(false)}
                 ></AddEventDialog>
             )}
+            <EditEventSheet
+                open={showEditEventSheet}
+                onOpenChange={setShowEditEventSheet}
+                event={eventToEdit}
+            />
         </div>
     );
 }
