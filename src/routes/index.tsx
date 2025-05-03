@@ -34,16 +34,13 @@ function Home() {
 
     return (
         <>
-            {isSignedIn ?
-                <Navigate to="/calendar" search={{ viewType }} />
-            :   <SignedOut>
-                    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center">
-                        <div className="rounded-lg shadow-xl">
-                            <SignIn routing="hash" />{" "}
-                        </div>
+            <SignedOut>
+                <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center">
+                    <div className="rounded-lg shadow-xl">
+                        <SignIn routing="hash" />{" "}
                     </div>
-                </SignedOut>
-            }
+                </div>
+            </SignedOut>
         </>
     );
 }
