@@ -2,11 +2,7 @@ import { useAuth, useUser } from "@clerk/tanstack-start";
 import { getAuth } from "@clerk/tanstack-start/server";
 import { createServerFn } from "@tanstack/react-start";
 import { getWebRequest } from "@tanstack/react-start/server";
-import {
-    createEvent,
-    getCurrentMonthEvents,
-    getEventsByMonth,
-} from "~/api/events";
+import { createEvent } from "~/api/events";
 import { CalendarEvent, CreateEventRequest } from "~/models/events";
 
 export const isLeapYear = (year: number): boolean => {
@@ -204,28 +200,6 @@ export const createNewEvent = createServerFn({ method: "POST" })
 
         return newEvent;
     });
-
-export const getMonthlyEvents = createServerFn({ method: "GET" }).handler(
-    async (): Promise<CalendarEvent[]> => {
-        const request = getWebRequest();
-        if (!request) {
-            throw new Error("Request not found");
-        }
-
-        const auth = await getAuth(request);
-        if (!auth || !auth.userId) {
-            throw new Error("User not authenticated");
-        }
-        const token = await auth.getToken();
-        if (!token) {
-            throw new Error("Token not found");
-        }
-
-        // calls your API helper
-        const events = await getCurrentMonthEvents(token);
-        return events;
-    }
-);
 
 // Pre-defined constant array of all time options (96 values - 24 hours × 4 quarters)
 export const ALL_TIME_OPTIONS = [
