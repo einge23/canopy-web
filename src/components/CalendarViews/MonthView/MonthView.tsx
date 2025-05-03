@@ -14,6 +14,7 @@ import { EditEventSheet } from "../EditEventsheet";
 type MonthViewProps = {
     events: CalendarEvent[];
 };
+
 export default function MonthView({ events }: MonthViewProps) {
     const { viewDate, selectedDate, setSelectedDate } = useCalendar();
     const [showCreateEventDialog, setShowCreateEventDialog] = useState(false);
@@ -93,8 +94,6 @@ export default function MonthView({ events }: MonthViewProps) {
                     )
                 )}
             </div>
-            {/* Add flex-grow to make the grid take available space */}
-            {/* Change row height definition to use 1fr for dynamic sizing */}
             <div className="grid grid-cols-7 gap-1 grid-rows-[repeat(5,_minmax(0,_1fr))] flex-grow">
                 {calendarDays.map(
                     (dayInfo, index) =>

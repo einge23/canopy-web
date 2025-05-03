@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useCalendar } from "~/contexts/CalendarContext";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { CalendarViewType, useCalendar } from "~/contexts/CalendarContext";
 import MonthView from "~/components/CalendarViews/MonthView/MonthView";
 import WeekView from "~/components/CalendarViews/WeekView";
 import DayView from "~/components/CalendarViews/DayView/DayView";
@@ -7,14 +7,21 @@ import { SignIn, useAuth } from "@clerk/tanstack-start";
 import { AnimatedLoader } from "~/components/AnimatedLoader";
 import { useQuery } from "@tanstack/react-query";
 import { filterEventsForDate, filterEventsForMonth } from "~/utils/calendar";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { getMonthlyEvents } from "~/api/events";
+import { z } from "zod";
+
 export type DayInfo = {
     date: Date;
     isCurrentMonth: boolean;
 };
 
+const calendarSearchSchema = z.object({
+    viewType: z.enum(["month", "week", "day"]).default("month"),
+});
+
 export const Route = createFileRoute("/_authed/calendar")({
+    validateSearch: calendarSearchSchema,
     beforeLoad: ({ context }) => {
         if (!context.userId) {
             throw new Error("Not authenticated");
@@ -38,12 +45,12 @@ export const Route = createFileRoute("/_authed/calendar")({
 });
 
 function CalendarComponent() {
-    const { viewType, viewDate, selectedDate } = useCalendar();
-
-    // Use viewDate instead of selectedDate for consistency
+    const { viewDate, selectedDate, setViewType } = useCalendar();
     const currentMonth = viewDate.getMonth();
     const currentYear = viewDate.getFullYear();
     const { getToken } = useAuth();
+
+    const { viewType } = Route.useSearch();
 
     const queryKey = useMemo(
         () => ["events", "monthly", currentYear, currentMonth],
