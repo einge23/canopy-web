@@ -8,13 +8,6 @@ import {
 import { createFileRoute, Navigate, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
-    beforeLoad: async ({ context }) => {
-        if (context.userId) {
-            throw redirect({
-                to: "/calendar",
-            });
-        }
-    },
     component: Home,
 });
 
@@ -27,6 +20,10 @@ function Home() {
                 Loading authentication...
             </div>
         );
+    }
+
+    if (isSignedIn) {
+        return <Navigate to="/calendar" replace />;
     }
 
     return (
