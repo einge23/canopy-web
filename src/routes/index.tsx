@@ -6,7 +6,6 @@ import {
     useAuth,
 } from "@clerk/tanstack-start";
 import { createFileRoute, Navigate, redirect } from "@tanstack/react-router";
-import { useCalendar } from "~/contexts/CalendarContext";
 
 export const Route = createFileRoute("/")({
     beforeLoad: async ({ context }) => {
@@ -20,7 +19,6 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-    const { viewType } = useCalendar();
     const { isLoaded, isSignedIn } = useAuth();
 
     if (!isLoaded) {
