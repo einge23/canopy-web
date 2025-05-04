@@ -309,3 +309,70 @@ export function getTimeOptionsStartingFrom(startDate: Date) {
 
     return ALL_TIME_OPTIONS.slice(startIndex);
 }
+
+export function eventsOverlap(
+    event1: CalendarEvent,
+    event2: CalendarEvent
+): boolean {
+    // Events overlap if they are not non-overlapping.
+    // They are non-overlapping if event1 ends before event2 starts OR event2 ends before event1 starts.
+    // So, they overlap if NOT (event1.endTime < event2.startTime || event2.endTime < event1.startTime)
+    // Which simplifies to event1.startTime <= event2.endTime AND event2.startTime <= event1.endTime
+    return (
+        event1.startTime <= event2.endTime && event2.startTime <= event1.endTime
+    );
+}
+
+export function groupOverlappingEvents(
+    events: CalendarEvent[]
+): CalendarEvent[][] {
+    const groups: CalendarEvent[][] = [];
+    // Keep track of the indices of events that have already been added to a group
+    const groupedEventIndices: Set<number> = new Set();
+
+    // Iterate through each event
+    for (let i = 0; i < events.length; i++) {
+        // If this event has already been assigned to a group, skip it
+        if (groupedEventIndices.has(i)) {
+            continue;
+        }
+
+        // Start a new group with the current event
+        const currentGroup: CalendarEvent[] = [];
+        // Use a list/queue to manage events whose overlaps need to be checked
+        const indicesToProcess: number[] = [i];
+        // Mark the starting event as grouped
+        groupedEventIndices.add(i);
+
+        // Process the events in the current potential group to find all related overlaps
+        while (indicesToProcess.length > 0) {
+            // Get the next event index to process from the queue
+            const currentIndex = indicesToProcess.shift()!; // Use ! because we know length > 0
+            const currentEvent = events[currentIndex];
+
+            // Add the current event to the group we are building
+            currentGroup.push(currentEvent);
+
+            // Check for overlaps with all other events
+            for (let j = 0; j < events.length; j++) {
+                // If event 'j' has not been grouped yet and it overlaps with the current event
+                if (
+                    !groupedEventIndices.has(j) &&
+                    eventsOverlap(currentEvent, events[j])
+                ) {
+                    // Add event 'j''s index to the list to process
+                    indicesToProcess.push(j);
+                    // Mark event 'j' as grouped so it's not processed again as a starting point or added duplicates
+                    groupedEventIndices.add(j);
+                }
+            }
+        }
+
+        // After the while loop finishes, we have found all events transitively
+        // overlapping with the starting event 'i'. Add this completed group
+        // to our list of groups.
+        groups.push(currentGroup);
+    }
+
+    return groups;
+}

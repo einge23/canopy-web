@@ -1,6 +1,7 @@
 import { CalendarEvent } from "~/models/events";
 import { useMemo } from "react";
 import { adjustColor } from "~/lib/random-helpers";
+import { groupOverlappingEvents } from "~/utils/calendar"; // Import the grouping function
 
 type DayEventBoxProps = {
     events: CalendarEvent[];
@@ -38,40 +39,67 @@ export default function DayEventBox({
             return { effectiveStart, effectiveEnd };
         };
 
-        // Sort events by start time
+        // Sort events by start time first
         const sortedEvents = [...events].sort(
             (a, b) =>
                 new Date(a.startTime).getTime() -
                 new Date(b.startTime).getTime()
         );
 
-        // Map events to their display properties
-        return sortedEvents.map((event, index) => {
-            const { effectiveStart, effectiveEnd } = getEventBoundariesForDay(
-                event,
-                viewDate
+        // Group overlapping events
+        const eventGroups = groupOverlappingEvents(sortedEvents);
+
+        // Calculate positions for each event, considering overlaps
+        const positionedEvents: Array<{
+            event: CalendarEvent;
+            topPixels: number;
+            heightPixels: number;
+            startTime: Date;
+            endTime: Date;
+            leftPercent: number;
+            widthPercent: number;
+        }> = [];
+
+        eventGroups.forEach((group) => {
+            const groupSize = group.length;
+            const eventWidthPercent = 100 / groupSize; // Divide width among overlapping events
+
+            // Sort events within the group by start time to maintain consistent horizontal order
+            group.sort(
+                (a, b) =>
+                    new Date(a.startTime).getTime() -
+                    new Date(b.startTime).getTime()
             );
 
-            // Get hours and minutes
-            const startHour = effectiveStart.getHours();
-            const startMinute = effectiveStart.getMinutes();
-            const endHour = effectiveEnd.getHours();
-            const endMinute = effectiveEnd.getMinutes();
+            group.forEach((event, indexInGroup) => {
+                const { effectiveStart, effectiveEnd } =
+                    getEventBoundariesForDay(event, viewDate);
 
-            // Calculate position and height
-            const topPixels = (startHour + startMinute / 60) * hourHeight;
-            const durationHours =
-                endHour - startHour + (endMinute - startMinute) / 60;
-            const heightPixels = Math.max(durationHours * hourHeight, 24);
+                const startHour = effectiveStart.getHours();
+                const startMinute = effectiveStart.getMinutes();
+                const endHour = effectiveEnd.getHours();
+                const endMinute = effectiveEnd.getMinutes();
 
-            return {
-                event,
-                topPixels,
-                heightPixels,
-                startTime: effectiveStart,
-                endTime: effectiveEnd,
-            };
+                const topPixels = (startHour + startMinute / 60) * hourHeight;
+                const durationHours =
+                    endHour - startHour + (endMinute - startMinute) / 60;
+                const heightPixels = Math.max(durationHours * hourHeight, 24); // Min height
+
+                const leftPercent = indexInGroup * eventWidthPercent;
+
+                positionedEvents.push({
+                    event,
+                    topPixels,
+                    heightPixels,
+                    startTime: effectiveStart,
+                    endTime: effectiveEnd,
+                    leftPercent,
+                    widthPercent: eventWidthPercent,
+                });
+            });
         });
+
+        return positionedEvents;
     }, [events, viewDate, hourHeight]);
 
     // Format time display
@@ -92,29 +120,55 @@ export default function DayEventBox({
     return (
         <div className={className}>
             {eventsWithPositions.map(
-                ({ event, topPixels, heightPixels, startTime, endTime }) => (
+                ({
+                    event,
+                    topPixels,
+                    heightPixels,
+                    startTime,
+                    endTime,
+                    leftPercent,
+                    widthPercent,
+                }) => (
                     <div
                         key={event.id}
-                        className="absolute hover:cursor-pointer left-1 right-1 rounded-md px-2 py-1 overflow-hidden hover:brightness-90 transition-all shadow-sm"
+                        data-event-id={event.id} // Add data attribute for easier targeting
+                        className="absolute hover:cursor-pointer rounded-md px-2 py-1 overflow-hidden hover:brightness-90 transition-all shadow-sm calendar-event" // Add class
                         style={{
                             top: `${topPixels}px`,
                             height: `${heightPixels}px`,
+                            left: `${leftPercent}%`, // Use percentage for left position
+                            width: `calc(${widthPercent}% - 4px)`, // Use percentage for width, subtract margin/padding
                             background: `linear-gradient(to bottom, ${event.color}, ${adjustColor(event.color, -20)})`,
                             zIndex: 10,
+                            marginLeft: "2px", // Add small margin between overlapping events
+                            marginRight: "2px",
                         }}
                         onClick={(e) => handleEventClick(e, event.id)}
                     >
-                        <div className="text-sm font-semibold text- truncate">
+                        {/* ... existing inner content ... */}
+                        <div className="text-sm font-semibold text-white truncate">
+                            {" "}
+                            {/* Ensure text is visible */}
                             {event.name}
                         </div>
-                        {heightPixels > 32 && (
-                            <div className="text-xs font-medium text-sage">
-                                {formatTime(startTime)} - {formatTime(endTime)}
-                                <div className="flex flex-row items-center mt-1">
-                                    <p className="mt-1">{event.location}</p>
+                        {heightPixels > 32 &&
+                            widthPercent > 30 && ( // Conditionally show details based on size
+                                <div className="text-xs font-medium text-white/80">
+                                    {" "}
+                                    {/* Ensure text is visible */}
+                                    {formatTime(startTime)} -{" "}
+                                    {formatTime(endTime)}
+                                    {event.location &&
+                                        widthPercent > 50 && ( // Show location only if enough space
+                                            <div className="flex flex-row items-center mt-1 truncate">
+                                                {/* Optional: Add location icon */}
+                                                <p className="mt-1">
+                                                    {event.location}
+                                                </p>
+                                            </div>
+                                        )}
                                 </div>
-                            </div>
-                        )}
+                            )}
                     </div>
                 )
             )}

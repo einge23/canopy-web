@@ -2,7 +2,7 @@ import { useCalendar } from "~/contexts/CalendarContext";
 import { CalendarEvent } from "~/models/events";
 import DayEventBox from "./DayEventBox";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { filterEventsForDate } from "~/utils/calendar";
+import { filterEventsForDate, groupOverlappingEvents } from "~/utils/calendar";
 import { AnimatedLoader } from "~/components/AnimatedLoader";
 import AddEventDialog from "../AddEventDialog";
 import { EditEventSheet } from "../EditEventsheet";
