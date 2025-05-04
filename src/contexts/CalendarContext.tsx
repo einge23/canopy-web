@@ -1,5 +1,5 @@
-import { useNavigate, useSearch } from "@tanstack/react-router";
-import React, { createContext, useContext, useState } from "react";
+import { useNavigate, useRouterState, useSearch } from "@tanstack/react-router";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { Route } from "~/routes/_authed/calendar";
 import { Months } from "~/utils/calendar";
 
@@ -32,9 +32,27 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
 
     const navigate = useNavigate();
     const search = useSearch({ from: Route.id });
-    const viewType = search.viewType;
+    const [viewType, setViewType] = useState<CalendarViewType>("month");
+    const routerState = useRouterState();
 
-    const setViewType = (type: CalendarViewType) => {
+    useEffect(() => {
+        const searchParams = new URLSearchParams(routerState.location.search);
+        const searchViewType = searchParams.get(
+            "viewType"
+        ) as CalendarViewType | null;
+
+        if (
+            searchViewType &&
+            ["day", "week", "month"].includes(searchViewType)
+        ) {
+            if (searchViewType !== viewType) {
+                setViewType(searchViewType);
+            }
+        }
+    }, [routerState.location.search, viewType]);
+
+    const handleSetViewType = (type: CalendarViewType) => {
+        setViewType(type);
         navigate({
             to: "/calendar",
             search: (prev) => ({
@@ -128,7 +146,7 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
                 viewType,
                 setViewDate,
                 setSelectedDate,
-                setViewType,
+                setViewType: handleSetViewType,
                 prevMonth,
                 nextMonth,
                 prevWeek,
