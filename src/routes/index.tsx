@@ -13,7 +13,6 @@ export const Route = createFileRoute("/")({
         if (context.userId) {
             throw redirect({
                 to: "/calendar",
-                search: { viewType: "month" },
             });
         }
     },
