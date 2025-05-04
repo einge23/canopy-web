@@ -115,19 +115,19 @@ function RootComponent() {
         <QueryClientProvider client={queryClient}>
             <RootDocument>
                 <ClerkProvider>
-                    <CalendarProvider>
-                        <Toaster />
-                        <SidebarProvider>
-                            <AppSidebar />
-                            <SidebarInset className="flex flex-col">
+                    <Toaster />
+                    <SidebarProvider>
+                        <AppSidebar />
+                        <SidebarInset className="flex flex-col">
+                            <CalendarProvider>
                                 <Navbar />
                                 <hr />
                                 <main className="h-[calc(100vh-69px)] bg-gradient-to-b from-background to-teal/80 overflow-hidden">
                                     <Outlet />
                                 </main>
-                            </SidebarInset>
-                        </SidebarProvider>
-                    </CalendarProvider>
+                            </CalendarProvider>
+                        </SidebarInset>
+                    </SidebarProvider>
                 </ClerkProvider>
             </RootDocument>
         </QueryClientProvider>

@@ -31,7 +31,6 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
     const [selectedDate, setSelectedDate] = useState<Date>(currentDate);
 
     const navigate = useNavigate();
-    const search = useSearch({ from: Route.id });
     const [viewType, setViewType] = useState<CalendarViewType>("month");
     const routerState = useRouterState();
 
