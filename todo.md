@@ -1,5 +1,5 @@
 [x] add/edit event popover
-[] overlapping events
+[x] overlapping events
 [] make dark mode
 [] week view
 [] time indicator

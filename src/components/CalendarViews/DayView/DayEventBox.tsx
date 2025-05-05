@@ -1,7 +1,7 @@
 import { CalendarEvent } from "~/models/events";
 import { useMemo } from "react";
 import { adjustColor } from "~/lib/random-helpers";
-import { groupOverlappingEvents } from "~/utils/calendar"; // Import the grouping function
+import { groupOverlappingEvents } from "~/utils/calendar";
 
 type DayEventBoxProps = {
     events: CalendarEvent[];
@@ -145,30 +145,27 @@ export default function DayEventBox({
                         }}
                         onClick={(e) => handleEventClick(e, event.id)}
                     >
-                        {/* ... existing inner content ... */}
-                        <div className="text-sm font-semibold text-white truncate">
+                        <div className="text-md font-bold truncate mb-1">
                             {" "}
-                            {/* Ensure text is visible */}
                             {event.name}
                         </div>
-                        {heightPixels > 32 &&
-                            widthPercent > 30 && ( // Conditionally show details based on size
-                                <div className="text-xs font-medium text-white/80">
-                                    {" "}
-                                    {/* Ensure text is visible */}
-                                    {formatTime(startTime)} -{" "}
-                                    {formatTime(endTime)}
-                                    {event.location &&
-                                        widthPercent > 50 && ( // Show location only if enough space
-                                            <div className="flex flex-row items-center mt-1 truncate">
-                                                {/* Optional: Add location icon */}
-                                                <p className="mt-1">
-                                                    {event.location}
-                                                </p>
-                                            </div>
-                                        )}
-                                </div>
+                        <div className="text-xs font-medium flex-row flex gap-2 items-center">
+                            {formatTime(startTime)} - {formatTime(endTime)}
+                            {event.location && (
+                                <p className=" truncate">{event.location}</p>
                             )}
+                        </div>
+                        {heightPixels > 70 && widthPercent > 30 && (
+                            <>
+                                <div>
+                                    {event.description && (
+                                        <p className="mt-1 truncate text-sm">
+                                            {event.description}
+                                        </p>
+                                    )}
+                                </div>
+                            </>
+                        )}
                     </div>
                 )
             )}

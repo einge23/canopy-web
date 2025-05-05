@@ -20,6 +20,7 @@ export default function DayView({ events, isLoading = false }: DayViewProps) {
     const [showEventForm, setShowEventForm] = useState(false);
     const [popoverTime, setPopoverTime] = useState<Date | null>(null);
     const [dialogPosition, setDialogPosition] = useState({ left: 0, top: 0 });
+    const [currentTime, setCurrentTime] = useState(new Date());
 
     const [showEditEventSheet, setShowEditEventSheet] = useState(false);
     const [eventToEdit, setEventToEdit] = useState<CalendarEvent | null>(null);
@@ -56,6 +57,14 @@ export default function DayView({ events, isLoading = false }: DayViewProps) {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, [showEventForm]);
+
+    useEffect(() => {
+        const timerId = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 60000);
+
+        return () => clearInterval(timerId);
+    }, []);
 
     // Memoize the calendar click handler
     const handleCalendarClick = useCallback(
@@ -127,6 +136,14 @@ export default function DayView({ events, isLoading = false }: DayViewProps) {
         }
     }, [showEventForm]);
 
+    const currentTimeLinePosition = useMemo(() => {
+        const now = currentTime;
+
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+        return (hours + minutes / 60) * hourHeight;
+    }, [currentTime, hourHeight, viewDate]);
+
     // Placeholder event visualization
     const placeholderEventBox = useMemo(() => {
         if (!placeholderEvent || !placeholderEvent.time) return null;
@@ -196,7 +213,7 @@ export default function DayView({ events, isLoading = false }: DayViewProps) {
     }, [hourHeight, handleCalendarClick]);
 
     return (
-        <div className="border rounded-lg p-4">
+        <div className="border rounded-lg p-4 h-full">
             <h2 className="text-lg font-semibold mb-4 text-center">
                 {viewDate.toLocaleDateString("en-US", {
                     weekday: "long",
@@ -206,10 +223,22 @@ export default function DayView({ events, isLoading = false }: DayViewProps) {
             </h2>
             <div
                 ref={containerRef}
-                className="overflow-y-auto max-h-[600px] relative"
+                className="overflow-y-auto max-h-[95%] relative"
             >
                 {hourElements}
                 <div className="absolute top-0 left-20 w-[90%] bottom-0 pointer-events-none">
+                    {currentTimeLinePosition !== null && (
+                        <div
+                            className="absolute left-0 right-0 border-t-2 border-red-500 border-dashed"
+                            style={{
+                                top: `${currentTimeLinePosition}px`,
+                                zIndex: 10,
+                            }}
+                        >
+                            {" "}
+                            <div className="absolute -left-2 top-[-0.3rem] w-2 h-2 bg-red-500 rounded-full"></div>
+                        </div>
+                    )}
                     {isLoading ?
                         <AnimatedLoader className="pointer-events-auto" />
                     :   <>
