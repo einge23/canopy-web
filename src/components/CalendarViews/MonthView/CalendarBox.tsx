@@ -63,7 +63,7 @@ export default function CalendarBox({
                         data-event-id={event.id}
                         onClick={(e) => handleEventClick(e, event.id)}
                         style={{
-                            background: `linear-gradient(to bottom, ${event.color}, ${adjustColor(event.color, -20)})`,
+                            background: `linear-gradient(to bottom, ${adjustColor(event.color, 35)}, ${event.color}, ${adjustColor(event.color, -20)})`,
                         }}
                     >
                         {event.name}

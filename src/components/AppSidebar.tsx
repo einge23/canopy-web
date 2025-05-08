@@ -1,4 +1,12 @@
-import { Calendar, Home, Inbox, Leaf, Search, Settings } from "lucide-react";
+import {
+    Calendar,
+    Clock,
+    Home,
+    Inbox,
+    Leaf,
+    Search,
+    Settings,
+} from "lucide-react";
 
 import {
     Sidebar,
@@ -10,6 +18,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { Link } from "@tanstack/react-router";
 // import { Separator } from "@/components/ui/separator";
 
 // // Menu items.
@@ -53,8 +62,18 @@ export function AppSidebar() {
                     <SidebarGroupContent className="mt-2">
                         <SidebarMenu>
                             <SidebarMenuItem className="rounded-md hover:bg-accent">
-                                <SidebarMenuButton>
-                                    <Home className="h-5 w-5" /> Home
+                                <SidebarMenuButton asChild>
+                                    <Link to="/">
+                                        <Home className="h-5 w-5" /> Home
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                            <SidebarMenuItem className="rounded-md hover:bg-accent">
+                                <SidebarMenuButton asChild>
+                                    <Link to="/pomodoro">
+                                        <Clock className="h-5 w-5" /> Pomodoro
+                                        Timer
+                                    </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
                         </SidebarMenu>

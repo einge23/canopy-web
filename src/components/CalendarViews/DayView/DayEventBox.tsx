@@ -138,7 +138,7 @@ export default function DayEventBox({
                             height: `${heightPixels}px`,
                             left: `${leftPercent}%`, // Use percentage for left position
                             width: `calc(${widthPercent}% - 4px)`, // Use percentage for width, subtract margin/padding
-                            background: `linear-gradient(to bottom, ${event.color}, ${adjustColor(event.color, -20)})`,
+                            background: `linear-gradient(to bottom, ${adjustColor(event.color, 35)}, ${event.color}, ${adjustColor(event.color, -20)})`,
                             zIndex: 10,
                             marginLeft: "2px", // Add small margin between overlapping events
                             marginRight: "2px",
