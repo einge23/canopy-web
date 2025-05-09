@@ -122,7 +122,7 @@ function RootComponent() {
                             <CalendarProvider>
                                 <Navbar />
                                 <hr />
-                                <main className="h-[calc(100vh-69px)] bg-gradient-to-b from-background to-teal/80 overflow-hidden">
+                                <main className="h-[calc(100vh-69px)] bg-gradient-to-b from-background to-teal/80 overflow-y-auto">
                                     <Outlet />
                                 </main>
                             </CalendarProvider>

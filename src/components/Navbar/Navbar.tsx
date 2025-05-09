@@ -29,8 +29,10 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import { useLocation } from "@tanstack/react-router";
 
 export default function Navbar() {
+    const { pathname } = useLocation();
     const {
         viewType,
         setViewType,
@@ -59,54 +61,68 @@ export default function Navbar() {
     return (
         <nav className="flex items-center justify-between p-4 w-full">
             {/* Left section - Month selection */}
-            <div className="flex items-center gap-2 shrink-0">
-                <SidebarTrigger />
-                <Button
-                    className="bg-background"
-                    onClick={handleNavigation.prev}
-                >
-                    <ChevronLeft />
-                </Button>
-                <h1>{formatViewDate()}</h1>
-                <Button
-                    className="bg-background"
-                    onClick={handleNavigation.next}
-                >
-                    <ChevronRight />
-                </Button>
+            {pathname.includes("/pomodoro") ?
+                <div className="flex items-center gap-2 shrink-0">
+                    <SidebarTrigger />
+                    <h1 className="text-xl font-semibold">
+                        Pomodoro Dashboard
+                    </h1>
+                </div>
+            :   <div className="flex items-center gap-2 shrink-0">
+                    <SidebarTrigger />
+                    <Button
+                        className="bg-background"
+                        onClick={handleNavigation.prev}
+                    >
+                        <ChevronLeft />
+                    </Button>
+                    <h1>{formatViewDate()}</h1>
+                    <Button
+                        className="bg-background"
+                        onClick={handleNavigation.next}
+                    >
+                        <ChevronRight />
+                    </Button>
 
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="ml-2">
-                            {viewType === "month" && (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="ml-2">
+                                {viewType === "month" && (
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                )}
+                                {viewType === "week" && (
+                                    <LayoutGrid className="mr-2 h-4 w-4" />
+                                )}
+                                {viewType === "day" && (
+                                    <Clock className="mr-2 h-4 w-4" />
+                                )}
+                                {viewType.charAt(0).toUpperCase() +
+                                    viewType.slice(1)}
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            <DropdownMenuItem
+                                onClick={() => setViewType("month")}
+                            >
                                 <CalendarIcon className="mr-2 h-4 w-4" />
-                            )}
-                            {viewType === "week" && (
+                                Month
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => setViewType("week")}
+                            >
                                 <LayoutGrid className="mr-2 h-4 w-4" />
-                            )}
-                            {viewType === "day" && (
+                                Week
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => setViewType("day")}
+                            >
                                 <Clock className="mr-2 h-4 w-4" />
-                            )}
-                            {viewType.charAt(0).toUpperCase() +
-                                viewType.slice(1)}
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                        <DropdownMenuItem onClick={() => setViewType("month")}>
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            Month
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setViewType("week")}>
-                            <LayoutGrid className="mr-2 h-4 w-4" />
-                            Week
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setViewType("day")}>
-                            <Clock className="mr-2 h-4 w-4" />
-                            Day
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
+                                Day
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            }
 
             <div className="flex items-center gap-4 shrink-0">
                 <StyledInput className="hidden md:block" />

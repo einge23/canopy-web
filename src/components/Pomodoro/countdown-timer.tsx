@@ -25,7 +25,6 @@ export default function PomodoroTimer({
 }: {
     onTimerComplete?: () => void;
 }) {
-    // Default timer durations in minutes
     const defaultSettings: TimerSettings = {
         pomodoro: 25,
         shortBreak: 5,
@@ -40,7 +39,6 @@ export default function PomodoroTimer({
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const countdownRef = useRef<Countdown>(null);
 
-    // Update timer when mode changes
     useEffect(() => {
         handleReset();
     }, [mode, settings]);
@@ -112,11 +110,8 @@ export default function PomodoroTimer({
     };
 
     return (
-        <Card className="w-full shadow-lg">
-            <CardHeader className="pb-2">
-                <CardTitle className="text-center text-2xl font-bold">
-                    Pomodoro Timer
-                </CardTitle>
+        <Card className="w-full bg-emerald/40 shadow-lg">
+            <CardHeader>
                 <Tabs
                     defaultValue="pomodoro"
                     className="w-full"
@@ -147,9 +142,8 @@ export default function PomodoroTimer({
                     </TabsList>
                 </Tabs>
             </CardHeader>
-            <CardContent className="flex flex-col items-center justify-center pt-6 pb-4">
+            <CardContent className="flex flex-col items-center justify-center">
                 <div className="relative w-56 h-56 flex items-center justify-center">
-                    {/* Circular progress background */}
                     <svg
                         className="absolute w-full h-full"
                         viewBox="0 0 100 100"
@@ -185,7 +179,6 @@ export default function PomodoroTimer({
                         />
                     </svg>
 
-                    {/* Timer display */}
                     <div
                         className="z-10 flex flex-col items-center justify-center"
                         data-timer-debug="true"
