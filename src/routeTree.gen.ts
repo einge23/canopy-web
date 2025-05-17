@@ -13,8 +13,9 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as AuthedImport } from './routes/_authed'
 import { Route as IndexImport } from './routes/index'
-import { Route as AuthedPomodoroImport } from './routes/_authed/pomodoro'
 import { Route as AuthedCalendarImport } from './routes/_authed/calendar'
+import { Route as AuthedPomodoroIndexImport } from './routes/_authed/pomodoro/index'
+import { Route as AuthedPomodoroSessionIdImport } from './routes/_authed/pomodoro/$sessionId'
 
 // Create/Update Routes
 
@@ -29,15 +30,21 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const AuthedPomodoroRoute = AuthedPomodoroImport.update({
-  id: '/pomodoro',
-  path: '/pomodoro',
-  getParentRoute: () => AuthedRoute,
-} as any)
-
 const AuthedCalendarRoute = AuthedCalendarImport.update({
   id: '/calendar',
   path: '/calendar',
+  getParentRoute: () => AuthedRoute,
+} as any)
+
+const AuthedPomodoroIndexRoute = AuthedPomodoroIndexImport.update({
+  id: '/pomodoro/',
+  path: '/pomodoro/',
+  getParentRoute: () => AuthedRoute,
+} as any)
+
+const AuthedPomodoroSessionIdRoute = AuthedPomodoroSessionIdImport.update({
+  id: '/pomodoro/$sessionId',
+  path: '/pomodoro/$sessionId',
   getParentRoute: () => AuthedRoute,
 } as any)
 
@@ -66,11 +73,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedCalendarImport
       parentRoute: typeof AuthedImport
     }
-    '/_authed/pomodoro': {
-      id: '/_authed/pomodoro'
+    '/_authed/pomodoro/$sessionId': {
+      id: '/_authed/pomodoro/$sessionId'
+      path: '/pomodoro/$sessionId'
+      fullPath: '/pomodoro/$sessionId'
+      preLoaderRoute: typeof AuthedPomodoroSessionIdImport
+      parentRoute: typeof AuthedImport
+    }
+    '/_authed/pomodoro/': {
+      id: '/_authed/pomodoro/'
       path: '/pomodoro'
       fullPath: '/pomodoro'
-      preLoaderRoute: typeof AuthedPomodoroImport
+      preLoaderRoute: typeof AuthedPomodoroIndexImport
       parentRoute: typeof AuthedImport
     }
   }
@@ -80,12 +94,14 @@ declare module '@tanstack/react-router' {
 
 interface AuthedRouteChildren {
   AuthedCalendarRoute: typeof AuthedCalendarRoute
-  AuthedPomodoroRoute: typeof AuthedPomodoroRoute
+  AuthedPomodoroSessionIdRoute: typeof AuthedPomodoroSessionIdRoute
+  AuthedPomodoroIndexRoute: typeof AuthedPomodoroIndexRoute
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedCalendarRoute: AuthedCalendarRoute,
-  AuthedPomodoroRoute: AuthedPomodoroRoute,
+  AuthedPomodoroSessionIdRoute: AuthedPomodoroSessionIdRoute,
+  AuthedPomodoroIndexRoute: AuthedPomodoroIndexRoute,
 }
 
 const AuthedRouteWithChildren =
@@ -95,14 +111,16 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '': typeof AuthedRouteWithChildren
   '/calendar': typeof AuthedCalendarRoute
-  '/pomodoro': typeof AuthedPomodoroRoute
+  '/pomodoro/$sessionId': typeof AuthedPomodoroSessionIdRoute
+  '/pomodoro': typeof AuthedPomodoroIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '': typeof AuthedRouteWithChildren
   '/calendar': typeof AuthedCalendarRoute
-  '/pomodoro': typeof AuthedPomodoroRoute
+  '/pomodoro/$sessionId': typeof AuthedPomodoroSessionIdRoute
+  '/pomodoro': typeof AuthedPomodoroIndexRoute
 }
 
 export interface FileRoutesById {
@@ -110,15 +128,22 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authed': typeof AuthedRouteWithChildren
   '/_authed/calendar': typeof AuthedCalendarRoute
-  '/_authed/pomodoro': typeof AuthedPomodoroRoute
+  '/_authed/pomodoro/$sessionId': typeof AuthedPomodoroSessionIdRoute
+  '/_authed/pomodoro/': typeof AuthedPomodoroIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '' | '/calendar' | '/pomodoro'
+  fullPaths: '/' | '' | '/calendar' | '/pomodoro/$sessionId' | '/pomodoro'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '' | '/calendar' | '/pomodoro'
-  id: '__root__' | '/' | '/_authed' | '/_authed/calendar' | '/_authed/pomodoro'
+  to: '/' | '' | '/calendar' | '/pomodoro/$sessionId' | '/pomodoro'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authed'
+    | '/_authed/calendar'
+    | '/_authed/pomodoro/$sessionId'
+    | '/_authed/pomodoro/'
   fileRoutesById: FileRoutesById
 }
 
@@ -153,15 +178,20 @@ export const routeTree = rootRoute
       "filePath": "_authed.tsx",
       "children": [
         "/_authed/calendar",
-        "/_authed/pomodoro"
+        "/_authed/pomodoro/$sessionId",
+        "/_authed/pomodoro/"
       ]
     },
     "/_authed/calendar": {
       "filePath": "_authed/calendar.tsx",
       "parent": "/_authed"
     },
-    "/_authed/pomodoro": {
-      "filePath": "_authed/pomodoro.tsx",
+    "/_authed/pomodoro/$sessionId": {
+      "filePath": "_authed/pomodoro/$sessionId.tsx",
+      "parent": "/_authed"
+    },
+    "/_authed/pomodoro/": {
+      "filePath": "_authed/pomodoro/index.tsx",
       "parent": "/_authed"
     }
   }
