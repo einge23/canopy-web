@@ -10,14 +10,15 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Play, Pause, RotateCcw, Coffee, Brain } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
+import { Play, Pause, RotateCcw, Coffee, Brain, Loader2 } from "lucide-react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useForm } from "@tanstack/react-form";
 import { toast } from "sonner";
 import {
     createPomodoroSession,
     updateSessionStatus,
+    getPomodoroSessionById,
 } from "~/api/pomodoro-sessions";
 import {
     CreatePomodoroSessionRequest,
@@ -52,8 +53,23 @@ export default function PomodoroTimer({
     const navigate = useNavigate();
 
     const [currentSessionId, setCurrentSessionId] = useState<number | null>(
-        initialSessionId || null
+        null
     );
+
+    const sessionQuery = useQuery({
+        queryKey: ["pomodoroSession", initialSessionId],
+        queryFn: async () => {
+            if (!initialSessionId) throw new Error("No session ID to fetch");
+            const token = await getToken();
+            if (!token) throw new Error("Authentication token not found.");
+            return getPomodoroSessionById(initialSessionId, token);
+        },
+        enabled: !!initialSessionId,
+        retry: (failureCount, error: any) => {
+            if (error?.response?.status === 404) return false;
+            return failureCount < 2;
+        },
+    });
 
     const {
         mutate: createPomodoroSessionMutation,
@@ -69,13 +85,20 @@ export default function PomodoroTimer({
         onSuccess: (data: PomodoroSession) => {
             toast.success("New pomodoro session started and saved!");
             setCurrentSessionId(data.id);
+            setSettings((prev) => ({
+                ...prev,
+                pomodoro: data.duration_minutes,
+            }));
+            setTimeLeft(data.duration_minutes * 60 * 1000);
             setIsRunning(true);
+            setKey((prevKey) => prevKey + 1);
             if (countdownRef.current) {
                 countdownRef.current.start();
             }
             navigate({
                 to: "/pomodoro/$sessionId",
                 params: { sessionId: String(data.id) },
+                replace: true,
             });
         },
         onError: (error) => {
@@ -121,11 +144,72 @@ export default function PomodoroTimer({
 
     const [settings, setSettings] = useState<TimerSettings>(defaultSettings);
     const [mode, setMode] = useState<TimerMode>("pomodoro");
-    const [timeLeft, setTimeLeft] = useState(settings[mode] * 60 * 1000);
+    const [timeLeft, setTimeLeft] = useState(settings.pomodoro * 60 * 1000);
     const [isRunning, setIsRunning] = useState(false);
     const [key, setKey] = useState(0);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const countdownRef = useRef<Countdown>(null);
+
+    useEffect(() => {
+        if (sessionQuery.data) {
+            const session = sessionQuery.data;
+            setCurrentSessionId(session.id);
+            setSettings((prev) => ({
+                ...prev,
+                pomodoro: session.duration_minutes,
+            }));
+            setTimeLeft(session.duration_minutes * 60 * 1000);
+            setIsRunning(session.status_type_id === "inprogress");
+            setKey((prev) => prev + 1);
+            if (
+                session.status_type_id === "inprogress" &&
+                countdownRef.current
+            ) {
+                setTimeout(() => countdownRef.current?.start(), 0);
+            } else if (
+                session.status_type_id === "paused" &&
+                countdownRef.current
+            ) {
+                setTimeout(() => countdownRef.current?.pause(), 0);
+            }
+        }
+    }, [sessionQuery.data]);
+
+    useEffect(() => {
+        if (sessionQuery.isError) {
+            const error = sessionQuery.error as any;
+            if (error?.response?.status === 404) {
+                toast.error(
+                    "Pomodoro session not found. Please start a new one."
+                );
+            } else {
+                toast.error(
+                    `Failed to load session: ${error?.message || "Unknown error"}`
+                );
+            }
+            setCurrentSessionId(null);
+            navigate({ to: "/pomodoro", replace: true });
+            handleReset();
+        }
+    }, [sessionQuery.isError, sessionQuery.error, navigate]);
+
+    useEffect(() => {
+        if (
+            !initialSessionId ||
+            sessionQuery.isSuccess ||
+            sessionQuery.isError
+        ) {
+            setIsRunning(false);
+            setTimeLeft(settings[mode] * 60 * 1000);
+            setKey((prevKey) => prevKey + 1);
+        }
+    }, [
+        mode,
+        settings,
+        initialSessionId,
+        sessionQuery.isSuccess,
+        sessionQuery.isError,
+    ]);
 
     const form = useForm({
         defaultValues: {
@@ -140,14 +224,14 @@ export default function PomodoroTimer({
             updatedAt: new Date(),
         },
         onSubmit: async ({ value }) => {
+            if (sessionQuery.isLoading) return;
             if (!userId) {
                 toast.error("User not authenticated. Cannot save session.");
                 return;
             }
-
             const request: CreatePomodoroSessionRequest = {
                 userId: userId,
-                startTime: value.startTime,
+                startTime: new Date(),
                 durationMinutes: settings[mode],
                 statusType: "inprogress",
                 goal: value.goal,
@@ -160,17 +244,9 @@ export default function PomodoroTimer({
         },
     });
 
-    useEffect(() => {
-        if (initialSessionId) {
-            setIsRunning(false);
-            setTimeLeft(settings[mode] * 60 * 1000);
-            setKey((prevKey) => prevKey + 1);
-        } else {
-            handleReset();
-        }
-    }, [mode, settings, initialSessionId]);
-
     const handlePrimaryAction = () => {
+        if (sessionQuery.isLoading) return;
+
         if (!currentSessionId && mode === "pomodoro") {
             form.handleSubmit();
         } else if (isRunning) {
@@ -179,7 +255,7 @@ export default function PomodoroTimer({
                     sessionId: currentSessionId,
                     statusType: "paused",
                 });
-            } else if (countdownRef.current) {
+            } else if (mode !== "pomodoro" && countdownRef.current) {
                 setIsRunning(false);
                 countdownRef.current.pause();
             }
@@ -200,10 +276,19 @@ export default function PomodoroTimer({
         setIsRunning(false);
         setTimeLeft(settings[mode] * 60 * 1000);
         setKey((prevKey) => prevKey + 1);
+        if (initialSessionId && currentSessionId) {
+            // Or, we could offer to cancel/complete the current session via API
+        }
     };
 
     const handleComplete = () => {
         setIsRunning(false);
+        if (mode === "pomodoro" && currentSessionId && userId) {
+            updateStatusMutation({
+                sessionId: currentSessionId,
+                statusType: "completed",
+            });
+        }
         if (onTimerComplete) {
             onTimerComplete();
         }
@@ -234,6 +319,9 @@ export default function PomodoroTimer({
         seconds: number;
         completed: boolean;
     }) => {
+        if (sessionQuery.isLoading && initialSessionId) {
+            return <div className="text-2xl font-bold">Loading Session...</div>;
+        }
         if (completed) {
             return <div className="text-4xl font-bold">00:00</div>;
         }
@@ -247,9 +335,14 @@ export default function PomodoroTimer({
 
     let primaryButtonText: string;
     let primaryButtonDisabled =
-        isCreatingSession || isUpdatingStatus || form.state.isSubmitting;
+        isCreatingSession ||
+        isUpdatingStatus ||
+        form.state.isSubmitting ||
+        sessionQuery.isLoading;
 
-    if (!currentSessionId && mode === "pomodoro") {
+    if (sessionQuery.isLoading && initialSessionId) {
+        primaryButtonText = "Loading...";
+    } else if (!currentSessionId && mode === "pomodoro") {
         primaryButtonText = "Start New Session";
     } else if (isRunning) {
         primaryButtonText = "Pause";
@@ -263,14 +356,19 @@ export default function PomodoroTimer({
         <Card className="w-full bg-emerald/40 shadow-lg">
             <CardHeader>
                 <Tabs
-                    defaultValue="pomodoro"
+                    value={mode}
                     className="w-full"
-                    onValueChange={(value) => setMode(value as TimerMode)}
+                    onValueChange={(value) => {
+                        if (!sessionQuery.isLoading) {
+                            setMode(value as TimerMode);
+                        }
+                    }}
                 >
                     <TabsList className="grid w-full grid-cols-3">
                         <TabsTrigger
                             value="pomodoro"
                             className="flex items-center gap-1"
+                            disabled={sessionQuery.isLoading}
                         >
                             <Brain className="w-4 h-4" />
                             <span>Focus</span>
@@ -278,6 +376,7 @@ export default function PomodoroTimer({
                         <TabsTrigger
                             value="shortBreak"
                             className="flex items-center gap-1"
+                            disabled={sessionQuery.isLoading}
                         >
                             <Coffee className="w-4 h-4" />
                             <span>Short Break</span>
@@ -285,6 +384,7 @@ export default function PomodoroTimer({
                         <TabsTrigger
                             value="longBreak"
                             className="flex items-center gap-1"
+                            disabled={sessionQuery.isLoading}
                         >
                             <Coffee className="w-4 h-4" />
                             <span>Long Break</span>
@@ -364,10 +464,12 @@ export default function PomodoroTimer({
                                 "default"
                             :   "outline"
                         }
-                        className={`flex items-center gap-1 ${isRunning && mode === "pomodoro" ? "bg-sage hover:bg-sage/80" : ""}`}
+                        className={`flex items-center gap-1 min-w-[120px] justify-center ${isRunning && mode === "pomodoro" ? "bg-sage hover:bg-sage/80" : ""}`}
                         disabled={primaryButtonDisabled}
                     >
-                        {isRunning ?
+                        {sessionQuery.isLoading && initialSessionId ?
+                            <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                        : isRunning ?
                             <Pause className="w-4 h-4" />
                         :   <Play className="w-4 h-4" />}
                         {(
@@ -389,7 +491,11 @@ export default function PomodoroTimer({
                         onClick={handleReset}
                         variant="outline"
                         className="flex items-center gap-1"
-                        disabled={isCreatingSession || isUpdatingStatus}
+                        disabled={
+                            isCreatingSession ||
+                            isUpdatingStatus ||
+                            sessionQuery.isLoading
+                        }
                     >
                         <RotateCcw className="w-4 h-4" />
                         Reset

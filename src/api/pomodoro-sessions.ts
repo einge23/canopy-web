@@ -28,3 +28,24 @@ export async function updateSessionStatus(
     );
     return response.status === 204;
 }
+
+export async function getPomodoroSessionById(
+    sessionId: number,
+    token: string
+): Promise<PomodoroSession> {
+    const authApi = getAuthenticatedApi(token);
+    const response = await authApi.get<PomodoroSession>(
+        `/pomodoro-sessions/${sessionId}`
+    );
+    return response.data;
+}
+
+export async function getUserPomodoroSessions(
+    token: string
+): Promise<PomodoroSession[]> {
+    const authApi = getAuthenticatedApi(token);
+    const response = await authApi.get<PomodoroSession[]>(
+        "/pomodoro-sessions/"
+    );
+    return response.data;
+}
