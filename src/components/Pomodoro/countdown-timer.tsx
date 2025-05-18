@@ -83,14 +83,26 @@ export default function PomodoroTimer({
             }
             return createPomodoroSession(request, token);
         },
-        onSuccess: (data: PomodoroSession) => {
+        onSuccess: (
+            data: PomodoroSession,
+            variables: CreatePomodoroSessionRequest
+        ) => {
             toast.success("New pomodoro session started and saved!");
             setCurrentSessionId(data.id);
+
+            // Use duration from request if backend returns invalid (e.g., 0 or null)
+            const requestedDuration = variables.durationMinutes;
+            const responseDuration = data.duration_minutes;
+            const confirmedDuration =
+                responseDuration && responseDuration > 0 ?
+                    responseDuration
+                :   requestedDuration;
+
             setSettings((prev) => ({
                 ...prev,
-                pomodoro: data.duration_minutes,
+                pomodoro: confirmedDuration,
             }));
-            setTimeLeft(data.duration_minutes * 60 * 1000);
+            setTimeLeft(confirmedDuration * 60 * 1000);
             setIsRunning(true);
             setKey((prevKey) => prevKey + 1);
             if (countdownRef.current) {
@@ -153,22 +165,46 @@ export default function PomodoroTimer({
 
     useEffect(() => {
         if (sessionQuery.data) {
-            const session = sessionQuery.data;
+            const session = sessionQuery.data as any; // Cast to any to flexibly access properties
+
+            // Safely determine duration, preferring model's snake_case, then actual camelCase, then default
+            const actualDurationMinutes =
+                session.duration_minutes ?? // Expected by model
+                session.durationMinutes ?? // Actual from your backend JSON example
+                defaultSettings.pomodoro; // Fallback
+
             setCurrentSessionId(session.id);
             setSettings((prev) => ({
                 ...prev,
-                pomodoro: session.duration_minutes,
+                pomodoro: actualDurationMinutes,
             }));
-            setTimeLeft(session.duration_minutes * 60 * 1000);
-            setIsRunning(session.status_type_id === "inprogress");
+            setTimeLeft(actualDurationMinutes * 60 * 1000);
+
+            // Handle status - this is still tricky due to type mismatch (number vs string)
+            // For now, this logic attempts to make sense of potential numeric status from backend
+            let currentStatusString: PomodoroStatus = "paused"; // Default to paused if unknown
+            if (typeof session.status_type_id === "string") {
+                currentStatusString = session.status_type_id as PomodoroStatus;
+            } else if (typeof session.statusType === "number") {
+                // Basic mapping: if backend sends 0, assume it means 'inprogress' for a new/active session.
+                // This is a temporary workaround. Backend should send proper string statuses.
+                if (session.statusType === 0) {
+                    currentStatusString = "inprogress";
+                } else {
+                    // Add other numeric to string mappings if known, otherwise stays paused
+                }
+            } else if (session.status_type_id === 0) {
+                // if status_type_id was somehow set to numeric 0
+                currentStatusString = "inprogress";
+            }
+
+            setIsRunning(currentStatusString === "inprogress");
             setKey((prev) => prev + 1);
-            if (
-                session.status_type_id === "inprogress" &&
-                countdownRef.current
-            ) {
+
+            if (currentStatusString === "inprogress" && countdownRef.current) {
                 setTimeout(() => countdownRef.current?.start(), 0);
             } else if (
-                session.status_type_id === "paused" &&
+                currentStatusString === "paused" &&
                 countdownRef.current
             ) {
                 setTimeout(() => countdownRef.current?.pause(), 0);
