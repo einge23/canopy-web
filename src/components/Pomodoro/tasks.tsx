@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Tasks() {
     return (
-        <Card className="w-full h-full bg-emerald/40 shadow-lg flex flex-col flex-1 min-h-0">
+        <Card className="w-full h-full shadow-lg flex flex-col flex-1 min-h-0 bg-card">
             <CardHeader className="shrink-0">
                 <CardTitle>Tasks</CardTitle>
             </CardHeader>

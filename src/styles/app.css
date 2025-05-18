@@ -5,9 +5,13 @@
 @layer base {
     :root {
         /* Light Mode */
-        --background: 130 29% 83%; /* #c8e1cc */
-        --foreground: 150 32% 20%; /* #2a3e34 */
-        --card: 130 35% 93%; /* #e8f4ea */
+        --background-start-rgb:
+            94, 180, 136; /* Brighter Green (approx #5EB488) */
+        --background-end-rgb:
+            12, 56, 30; /* Dark Green Base for Gradient (approx #0C381E) */
+        --background: 150 70% 15%; /* Dark Green (approx #0C381E) */
+        --foreground: 0 0% 95%; /* Off-white for contrast on dark green bg */
+        --card: 60 100% 91%; /* #FFFDD0 */
         --card-foreground: 150 32% 20%; /* #2a3e34 */
         --popover: 130 35% 93%; /* #e8f4ea */
         --popover-foreground: 150 32% 20%; /* #2a3e34 */
@@ -33,6 +37,7 @@
         --emerald: 152 32% 54%; /* #5EB488 */
         --slate: 201 23% 36%; /* #446571 */
         --navy: 202 29% 26%; /* #2F4858 */
+        --darkcream: 48 33 70; /* #C5BF9B - (Original #B9B28A at 48 33 82) */
     }
 
     .dark:root {
@@ -77,7 +82,29 @@
 
     html,
     body {
-        @apply bg-background text-foreground;
+        min-height: 100vh;
+        @apply text-foreground;
+    }
+
+    /* Apply specific backgrounds per mode */
+    body {
+        /* Light mode by default */
+        background-color: rgba(
+            var(--background-end-rgb),
+            1
+        ); /* Fallback: Solid Dark Green */
+        background-image: linear-gradient(
+            to bottom right,
+            rgba(var(--background-start-rgb), 1) 4%,
+            rgba(var(--background-end-rgb), 1) 100%
+        );
+    }
+
+    .dark body {
+        background-color: hsl(
+            var(--background)
+        ); /* Uses dark mode's --background e.g. #3d3d3d */
+        background-image: none; /* Explicitly solid for dark mode */
     }
 
     .using-mouse * {

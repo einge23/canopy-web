@@ -107,8 +107,12 @@ function CalendarComponent() {
     return (
         <div className="p-2 h-full">
             {viewType === "month" && <MonthView events={monthEvents} />}
-            {viewType === "week" && <WeekView />}
-            {viewType === "day" && <DayView events={dailyEvents} />}
+            {viewType === "week" && (
+                <WeekView events={monthEvents} isLoading={isLoading} />
+            )}
+            {viewType === "day" && (
+                <DayView events={dailyEvents} isLoading={isLoading} />
+            )}
         </div>
     );
 }

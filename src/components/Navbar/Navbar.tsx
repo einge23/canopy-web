@@ -59,7 +59,7 @@ export default function Navbar() {
     };
 
     return (
-        <nav className="flex items-center justify-between p-4 w-full">
+        <nav className="flex items-center justify-between p-4 w-full bg-transparent">
             {/* Left section - Month selection */}
             {pathname.includes("/pomodoro") ?
                 <div className="flex items-center gap-2 shrink-0">
@@ -71,22 +71,22 @@ export default function Navbar() {
             :   <div className="flex items-center gap-2 shrink-0">
                     <SidebarTrigger />
                     <Button
-                        className="bg-background"
+                        className="bg-transparent"
                         onClick={handleNavigation.prev}
                     >
-                        <ChevronLeft />
+                        <ChevronLeft className="text-white" />
                     </Button>
                     <h1>{formatViewDate()}</h1>
                     <Button
-                        className="bg-background"
+                        className="bg-transparent"
                         onClick={handleNavigation.next}
                     >
-                        <ChevronRight />
+                        <ChevronRight className="text-white" />
                     </Button>
 
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="ml-2">
+                            <Button className="ml-2 bg-card text-card-foreground hover:bg-sage/90">
                                 {viewType === "month" && (
                                     <CalendarIcon className="mr-2 h-4 w-4" />
                                 )}
@@ -100,7 +100,7 @@ export default function Navbar() {
                                     viewType.slice(1)}
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent>
+                        <DropdownMenuContent className="bg-card text-card-foreground">
                             <DropdownMenuItem
                                 onClick={() => setViewType("month")}
                             >

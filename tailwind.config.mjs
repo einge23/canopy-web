@@ -45,6 +45,7 @@ export default {
                 emerald: "hsl(var(--emerald))",
                 slate: "hsl(var(--slate))",
                 navy: "hsl(var(--navy))",
+                darkcream: "hsl(var(--darkcream))",
             },
             fontFamily: {
                 sans: ["Comfortaa", "sans-serif"],

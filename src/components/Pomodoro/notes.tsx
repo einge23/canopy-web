@@ -3,7 +3,7 @@ import { Textarea } from "../ui/textarea";
 
 export default function Notes() {
     return (
-        <Card className="w-full h-full bg-emerald/40 shadow-lg flex flex-col">
+        <Card className="w-full h-full shadow-lg flex flex-col bg-card">
             <CardHeader className="shrink-0">
                 <CardTitle>Notes</CardTitle>
             </CardHeader>

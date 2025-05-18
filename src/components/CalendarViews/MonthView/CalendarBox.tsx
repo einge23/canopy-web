@@ -43,12 +43,13 @@ export default function CalendarBox({
         <div
             key={index}
             onClick={handleClick}
-            className={`p-1 md:p-2 border rounded cursor-pointer overflow-hidden flex flex-col ${
-                !dayInfo.isCurrentMonth ? "bg-teal text-gray-100"
+            className={`p-1 text-navy md:p-2 border rounded cursor-pointer overflow-hidden flex flex-col ${
+                !dayInfo.isCurrentMonth ? "bg-darkcream text-gray-100"
                 : isSelected(dayInfo.date, selectedDate) ?
-                    "bg-sage  border-2 border-teal"
-                : isToday(dayInfo.date) ? "bg-teal/50 border-gray-100"
-                : ""
+                    "bg-sage border-2 border-teal" // Selected takes precedence
+                : isToday(dayInfo.date) ?
+                    "bg-card border-emerald border-2" // Today in current month is bg-card with a special border
+                :   "bg-card" // Default for current month days
             }`}
         >
             <div className="text-right text-xs md:text-sm mb-1 flex-shrink-0">

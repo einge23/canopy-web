@@ -52,8 +52,8 @@ import { Link } from "@tanstack/react-router";
 
 export function AppSidebar() {
     return (
-        <Sidebar>
-            <SidebarContent>
+        <Sidebar className="bg-transparent border-none">
+            <SidebarContent className="bg-transparent">
                 <SidebarGroup>
                     <SidebarGroupLabel className="font-bold text-xl flex justify-center items-center gap-3 h-[52px]">
                         <Leaf className="h-7 w-7" /> canopy

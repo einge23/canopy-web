@@ -112,13 +112,13 @@ export default function MonthView({ events }: MonthViewProps) {
     };
 
     return (
-        <div className="p-2 flex flex-col h-[calc(100vh-78px)] min-h-0">
+        <div className="bg-transparent rounded-lg p-4 flex flex-col h-[calc(100vh-78px)] min-h-0 shadow-md">
             <div className="grid grid-cols-7 gap-1 flex-shrink-0 mb-1">
                 {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
                     (day) => (
                         <div
                             key={day}
-                            className="p-2 text-center rounded-md font-semibold bg-gray-100"
+                            className="p-2 text-center rounded-md font-semibold text-white dark:bg-slate-700 dark:text-slate-200"
                         >
                             {day}
                         </div>

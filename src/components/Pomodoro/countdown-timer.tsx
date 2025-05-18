@@ -15,6 +15,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useForm } from "@tanstack/react-form";
 import { toast } from "sonner";
+import StyledButton from "@/components/Navbar/StyledButton";
 import {
     createPomodoroSession,
     updateSessionStatus,
@@ -353,7 +354,7 @@ export default function PomodoroTimer({
     }
 
     return (
-        <Card className="w-full bg-emerald/40 shadow-lg">
+        <Card className="w-full mx-auto shadow-xl bg-card">
             <CardHeader>
                 <Tabs
                     value={mode}
@@ -367,7 +368,7 @@ export default function PomodoroTimer({
                     <TabsList className="grid w-full grid-cols-3">
                         <TabsTrigger
                             value="pomodoro"
-                            className="flex items-center gap-1"
+                            className="flex items-center gap-1 text-navy data-[state=active]:bg-sage data-[state=active]:text-card-foreground"
                             disabled={sessionQuery.isLoading}
                         >
                             <Brain className="w-4 h-4" />
@@ -375,7 +376,7 @@ export default function PomodoroTimer({
                         </TabsTrigger>
                         <TabsTrigger
                             value="shortBreak"
-                            className="flex items-center gap-1"
+                            className="flex items-center gap-1 text-navy data-[state=active]:bg-sage data-[state=active]:text-card-foreground"
                             disabled={sessionQuery.isLoading}
                         >
                             <Coffee className="w-4 h-4" />
@@ -383,7 +384,7 @@ export default function PomodoroTimer({
                         </TabsTrigger>
                         <TabsTrigger
                             value="longBreak"
-                            className="flex items-center gap-1"
+                            className="flex items-center gap-1 text-navy data-[state=active]:bg-sage data-[state=active]:text-card-foreground"
                             disabled={sessionQuery.isLoading}
                         >
                             <Coffee className="w-4 h-4" />
@@ -457,39 +458,45 @@ export default function PomodoroTimer({
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
                 <div className="flex justify-center gap-2 w-full">
-                    <Button
+                    <StyledButton
                         onClick={handlePrimaryAction}
-                        variant={
-                            isRunning && mode === "pomodoro" ?
-                                "default"
-                            :   "outline"
-                        }
-                        className={`flex items-center gap-1 min-w-[120px] justify-center ${isRunning && mode === "pomodoro" ? "bg-sage hover:bg-sage/80" : ""}`}
+                        className="min-w-[120px] justify-center"
                         disabled={primaryButtonDisabled}
+                        isLoading={
+                            (sessionQuery.isLoading && !!initialSessionId) ||
+                            (isCreatingSession &&
+                                primaryButtonText === "Start New Session") ||
+                            (isUpdatingStatus &&
+                                (primaryButtonText === "Pause" ||
+                                    primaryButtonText === "Resume"))
+                        }
                     >
-                        {sessionQuery.isLoading && initialSessionId ?
-                            <Loader2 className="w-4 h-4 animate-spin mr-1" />
-                        : isRunning ?
-                            <Pause className="w-4 h-4" />
-                        :   <Play className="w-4 h-4" />}
-                        {(
+                        {!(
+                            (sessionQuery.isLoading && !!initialSessionId) ||
+                            (isCreatingSession &&
+                                primaryButtonText === "Start New Session") ||
+                            (isUpdatingStatus &&
+                                (primaryButtonText === "Pause" ||
+                                    primaryButtonText === "Resume"))
+                        ) &&
+                            (isRunning ?
+                                <Pause className="w-4 h-4 mr-1" />
+                            :   <Play className="w-4 h-4 mr-1" />)}
+                        {sessionQuery.isLoading && !!initialSessionId ?
+                            "Loading..."
+                        : (
                             isCreatingSession &&
                             primaryButtonText === "Start New Session"
                         ) ?
                             "Starting..."
-                        : (
-                            isUpdatingStatus &&
-                            (primaryButtonText === "Pause" ||
-                                primaryButtonText === "Resume")
-                        ) ?
-                            primaryButtonText === "Pause" ?
-                                "Pausing..."
-                            :   "Resuming..."
+                        : isUpdatingStatus && primaryButtonText === "Pause" ?
+                            "Pausing..."
+                        : isUpdatingStatus && primaryButtonText === "Resume" ?
+                            "Resuming..."
                         :   primaryButtonText}
-                    </Button>
-                    <Button
+                    </StyledButton>
+                    <StyledButton
                         onClick={handleReset}
-                        variant="outline"
                         className="flex items-center gap-1"
                         disabled={
                             isCreatingSession ||
@@ -497,9 +504,8 @@ export default function PomodoroTimer({
                             sessionQuery.isLoading
                         }
                     >
-                        <RotateCcw className="w-4 h-4" />
-                        Reset
-                    </Button>
+                        <RotateCcw className="w-4 h-4 mr-1" /> Reset
+                    </StyledButton>
                 </div>
 
                 <Button
